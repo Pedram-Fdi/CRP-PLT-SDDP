@@ -1,0 +1,44 @@
+
+Gurobi 11.0.0 (win64) logging started Sat Jun 15 09:55:30 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_1_iter_12.log"
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+Optimize a model with 1493 rows, 20462 columns and 77905 nonzeros
+Coefficient statistics:
+  Matrix range     [3e-03, 7e+03]
+  Objective range  [1e-01, 2e+05]
+  Bounds range     [1e+01, 1e+06]
+  RHS range        [1e+00, 4e+04]
+LP warm-start: use basis
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    5.4561476e+04   4.226247e+03   0.000000e+00      0s
+     168    5.8092925e+04   0.000000e+00   0.000000e+00      0s
+
+Solved in 168 iterations and 0.02 seconds (0.02 work units)
+Optimal objective  5.809292492e+04
+
+Gurobi 11.0.0 (win64) logging started Sat Jun 15 10:53:42 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_1_iter_12.log"
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+Optimize a model with 1493 rows, 20462 columns and 76463 nonzeros
+Coefficient statistics:
+  Matrix range     [7e-03, 7e+03]
+  Objective range  [1e-01, 2e+05]
+  Bounds range     [1e+01, 7e+05]
+  RHS range        [1e+00, 1e+05]
+LP warm-start: use basis
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    5.3544503e+04   6.678295e+02   0.000000e+00      0s
+      60    5.3826061e+04   0.000000e+00   0.000000e+00      0s
+
+Solved in 60 iterations and 0.01 seconds (0.01 work units)
+Optimal objective  5.382606126e+04

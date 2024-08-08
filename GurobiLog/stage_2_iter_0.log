@@ -1,0 +1,340 @@
+
+Gurobi 11.0.0 (win64) logging started Sat Jun 15 09:38:47 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_2_iter_0.log"
+Set parameter Threads to value 1
+Set parameter FeasibilityTol to value 1e-05
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+
+Warning: excessive time spent in model updates.
+Consider calling update less frequently.
+
+Optimize a model with 1481 rows, 20450 columns and 26115 nonzeros
+Model fingerprint: 0xb715565d
+Coefficient statistics:
+  Matrix range     [1e+00, 4e+01]
+  Objective range  [1e-01, 2e+05]
+  Bounds range     [5e+00, 2e+01]
+  RHS range        [1e+00, 3e+04]
+Presolve removed 1167 rows and 18329 columns
+Presolve time: 0.01s
+Presolved: 314 rows, 2121 columns, 6050 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    3.1135300e+03   2.398338e+02   0.000000e+00      0s
+     355    3.2804898e+04   0.000000e+00   0.000000e+00      0s
+
+Solved in 355 iterations and 0.02 seconds (0.01 work units)
+Optimal objective  3.280489833e+04
+
+Gurobi 11.0.0 (win64) logging started Sat Jun 15 09:39:33 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_2_iter_0.log"
+Set parameter Threads to value 1
+Set parameter FeasibilityTol to value 1e-05
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+
+Warning: excessive time spent in model updates.
+Consider calling update less frequently.
+
+Optimize a model with 1481 rows, 20450 columns and 26115 nonzeros
+Model fingerprint: 0xe769e4e2
+Coefficient statistics:
+  Matrix range     [1e+00, 4e+01]
+  Objective range  [1e-01, 2e+05]
+  Bounds range     [2e+00, 2e+01]
+  RHS range        [1e+00, 3e+04]
+Presolve removed 1170 rows and 18410 columns
+Presolve time: 0.01s
+Presolved: 311 rows, 2040 columns, 5741 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    3.0930500e+03   2.427685e+02   0.000000e+00      0s
+     387    3.6600802e+04   0.000000e+00   0.000000e+00      0s
+
+Solved in 387 iterations and 0.02 seconds (0.01 work units)
+Optimal objective  3.660080167e+04
+
+Gurobi 11.0.0 (win64) logging started Sat Jun 15 10:37:32 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_2_iter_0.log"
+Set parameter Threads to value 1
+Set parameter FeasibilityTol to value 1e-05
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+
+Warning: excessive time spent in model updates.
+Consider calling update less frequently.
+
+Optimize a model with 1481 rows, 20450 columns and 26115 nonzeros
+Model fingerprint: 0x3bf22a92
+Coefficient statistics:
+  Matrix range     [1e+00, 4e+01]
+  Objective range  [1e-01, 2e+05]
+  Bounds range     [5e+00, 2e+01]
+  RHS range        [1e+00, 3e+04]
+Presolve removed 1175 rows and 18447 columns
+Presolve time: 0.01s
+Presolved: 306 rows, 2003 columns, 5672 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    3.0930500e+03   2.422060e+02   0.000000e+00      0s
+     385    3.6439235e+04   0.000000e+00   0.000000e+00      0s
+
+Solved in 385 iterations and 0.02 seconds (0.01 work units)
+Optimal objective  3.643923500e+04
+
+Gurobi 11.0.0 (win64) logging started Sat Jun 15 10:37:53 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_2_iter_0.log"
+Set parameter Threads to value 1
+Set parameter FeasibilityTol to value 1e-05
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+
+Warning: excessive time spent in model updates.
+Consider calling update less frequently.
+
+Optimize a model with 1481 rows, 20450 columns and 26115 nonzeros
+Model fingerprint: 0xdba1856c
+Coefficient statistics:
+  Matrix range     [1e+00, 4e+01]
+  Objective range  [1e-01, 2e+05]
+  Bounds range     [2e+00, 2e+01]
+  RHS range        [1e+00, 3e+04]
+Presolve removed 1176 rows and 18456 columns
+Presolve time: 0.01s
+Presolved: 305 rows, 1994 columns, 5655 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    3.0930500e+03   2.371463e+02   0.000000e+00      0s
+     381    3.6480758e+04   0.000000e+00   0.000000e+00      0s
+
+Solved in 381 iterations and 0.02 seconds (0.01 work units)
+Optimal objective  3.648075833e+04
+
+Gurobi 11.0.0 (win64) logging started Sat Jun 15 10:56:44 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_2_iter_0.log"
+Set parameter Threads to value 1
+Set parameter FeasibilityTol to value 1e-05
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+
+Warning: excessive time spent in model updates.
+Consider calling update less frequently.
+
+Optimize a model with 1481 rows, 20450 columns and 26115 nonzeros
+Model fingerprint: 0x23d895fa
+Coefficient statistics:
+  Matrix range     [1e+00, 4e+01]
+  Objective range  [1e-01, 2e+05]
+  Bounds range     [2e+00, 2e+01]
+  RHS range        [1e+00, 3e+04]
+Presolve removed 1169 rows and 18373 columns
+Presolve time: 0.01s
+Presolved: 312 rows, 2077 columns, 5852 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    3.3605500e+03   2.403963e+02   0.000000e+00      0s
+     368    3.4898883e+04   0.000000e+00   0.000000e+00      0s
+
+Solved in 368 iterations and 0.02 seconds (0.01 work units)
+Optimal objective  3.489888333e+04
+
+Gurobi 11.0.0 (win64) logging started Sat Jun 15 13:12:10 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_2_iter_0.log"
+Set parameter Threads to value 1
+Set parameter FeasibilityTol to value 1e-05
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+Optimize a model with 695 rows, 6610 columns and 11930 nonzeros
+Model fingerprint: 0xc79a726e
+Coefficient statistics:
+  Matrix range     [1e+00, 5e+01]
+  Objective range  [3e+00, 2e+05]
+  Bounds range     [2e+00, 2e+01]
+  RHS range        [1e+00, 3e+04]
+Presolve removed 366 rows and 4369 columns
+Presolve time: 0.01s
+Presolved: 329 rows, 2241 columns, 6191 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    1.0045200e+03   2.943283e+02   0.000000e+00      0s
+     434    3.3301258e+04   0.000000e+00   0.000000e+00      0s
+
+Solved in 434 iterations and 0.01 seconds (0.01 work units)
+Optimal objective  3.330125833e+04
+
+Gurobi 11.0.0 (win64) logging started Sat Jun 15 13:13:11 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_2_iter_0.log"
+Set parameter Threads to value 1
+Set parameter FeasibilityTol to value 1e-05
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+Optimize a model with 695 rows, 6610 columns and 11930 nonzeros
+Model fingerprint: 0x078d0718
+Coefficient statistics:
+  Matrix range     [1e+00, 5e+01]
+  Objective range  [3e+00, 2e+05]
+  Bounds range     [1e+00, 2e+01]
+  RHS range        [1e+00, 3e+04]
+Presolve removed 371 rows and 4435 columns
+Presolve time: 0.01s
+Presolved: 324 rows, 2175 columns, 6109 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    4.2519200e+03   2.915158e+02   0.000000e+00      0s
+     341    3.1504552e+04   0.000000e+00   0.000000e+00      0s
+
+Solved in 341 iterations and 0.02 seconds (0.01 work units)
+Optimal objective  3.150455167e+04
+
+Gurobi 11.0.0 (win64) logging started Sat Jun 15 13:14:35 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_2_iter_0.log"
+Set parameter Threads to value 1
+Set parameter FeasibilityTol to value 1e-05
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+Optimize a model with 695 rows, 6610 columns and 11930 nonzeros
+Model fingerprint: 0x8b2fa8b5
+Coefficient statistics:
+  Matrix range     [1e+00, 5e+01]
+  Objective range  [3e+00, 2e+05]
+  Bounds range     [2e+00, 4e+02]
+  RHS range        [1e+00, 3e+04]
+Presolve removed 373 rows and 4403 columns
+Presolve time: 0.01s
+Presolved: 322 rows, 2207 columns, 6228 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    3.8833600e+03   2.524213e+02   0.000000e+00      0s
+     362    2.8694746e+04   0.000000e+00   0.000000e+00      0s
+
+Solved in 362 iterations and 0.01 seconds (0.01 work units)
+Optimal objective  2.869474567e+04
+
+Gurobi 11.0.0 (win64) logging started Sat Jun 15 13:45:57 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_2_iter_0.log"
+Set parameter Threads to value 1
+Set parameter FeasibilityTol to value 1e-05
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+
+Warning: excessive time spent in model updates.
+Consider calling update less frequently.
+
+Optimize a model with 875 rows, 12370 columns and 31490 nonzeros
+Model fingerprint: 0x2a21daae
+Coefficient statistics:
+  Matrix range     [3e-01, 5e+01]
+  Objective range  [3e-01, 2e+05]
+  Bounds range     [5e-01, 1e+03]
+  RHS range        [1e+00, 3e+04]
+Presolve removed 343 rows and 6033 columns
+Presolve time: 0.01s
+Presolved: 532 rows, 6337 columns, 21978 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    7.4012797e+04   9.295651e+02   0.000000e+00      0s
+    1275    8.6322226e+05   0.000000e+00   0.000000e+00      0s
+
+Solved in 1275 iterations and 0.03 seconds (0.04 work units)
+Optimal objective  8.632222581e+05
+
+Gurobi 11.0.0 (win64) logging started Sun Jun 16 17:42:08 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_2_iter_0.log"
+Set parameter Threads to value 1
+Set parameter FeasibilityTol to value 1e-05
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+
+Warning: excessive time spent in model updates.
+Consider calling update less frequently.
+
+Optimize a model with 1998 rows, 27919 columns and 81800 nonzeros
+Model fingerprint: 0xf85dcd58
+Coefficient statistics:
+  Matrix range     [3e-01, 2e+05]
+  Objective range  [3e-01, 2e+05]
+  Bounds range     [1e+00, 2e+03]
+  RHS range        [1e+00, 2e+04]
+Presolve removed 1077 rows and 15098 columns
+Presolve time: 0.03s
+Presolved: 921 rows, 12821 columns, 51267 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0   -1.3732960e+07   3.898855e+05   0.000000e+00      0s
+    2793    3.6469534e+06   0.000000e+00   0.000000e+00      0s
+
+Solved in 2793 iterations and 0.12 seconds (0.16 work units)
+Optimal objective  3.646953402e+06
+
+Gurobi 11.0.0 (win64) logging started Tue Jul  2 10:26:14 2024
+
+Set parameter LogFile to value "./GurobiLog/stage_2_iter_0.log"
+Set parameter Threads to value 1
+Set parameter FeasibilityTol to value 1e-05
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+
+Warning: excessive time spent in model updates.
+Consider calling update less frequently.
+
+Optimize a model with 835 rows, 12350 columns and 28090 nonzeros
+Model fingerprint: 0x74ca9119
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+01]
+  Objective range  [1e+00, 2e+05]
+  Bounds range     [1e+00, 1e+03]
+  RHS range        [1e+00, 2e+04]
+Presolve removed 403 rows and 8594 columns
+Presolve time: 0.01s
+Presolved: 432 rows, 3756 columns, 12751 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    3.1150630e+04   9.136443e+02   0.000000e+00      0s
+     723    1.0266472e+07   0.000000e+00   0.000000e+00      0s
+
+Solved in 723 iterations and 0.02 seconds (0.02 work units)
+Optimal objective  1.026647222e+07
