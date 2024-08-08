@@ -177,7 +177,7 @@ def GenerateInstances():
                 for l in range(5, 21, 5):
                     for m in range(3, 4, 1):
                         for c in range (4, 5, 4):
-                            for InstanceNumber in range (1, 10, 1):
+                            for InstanceNumber in range (1, 9, 1):
                                 if c not in (4, 8):
                                     raise ValueError("Invalid value for Blood GP. Blood group (c) should only be 4 or 8.")
 
