@@ -4,7 +4,7 @@ import pandas as pd
 # This file integrates the results in "folder_path" which are obtained from running the code for different instances with different methods and finally saves the result in the same folder!
 
 # Directory containing the Excel files
-folder_path = r"C:\PhD\Thesis\Papers\2nd\Presentation\02\20240804_Run\Test_1"
+folder_path = r"C:\PhD\Thesis\Papers\2nd\Presentation\02\20240804_Run\Test_2"
 
 # Output file
 output_file = os.path.join(folder_path, "TotalData.xlsx")
