@@ -1107,16 +1107,12 @@ class SDDP(object):
         # Calculate the number of scenarios to create based on the percentage
         NrScenariosBasedonPercentage = int(nrscenar * (percentage / 100.0))
         nrscenar_to_create = min(NrScenariosBasedonPercentage, Constants.NrInSampleScnearioTest)
-
-        if Constants.Always_NrInSampleScnearioTest_Scenario == 1:
-            nrscenar_to_create = Constants.NrInSampleScnearioTest  # Force to 1000 if Always_NrInSampleScnearioTest_Scenario is set
-
         self.CurrentNrInSampleScenarioToTest = nrscenar_to_create
 
         # Initialize the index array
         indexstage = [0] * (len(self.StagesSet) - 1)
         
-        if Constants.NrInSampleScnearioTest < NrScenariosBasedonPercentage:  # Random sampling
+        if Constants.NrInSampleScnearioTest < NrScenariosBasedonPercentage:     #When we do not want to creat all scenarios! We want random Sampling!
             random_indices = [i for i in range(nrscenar)]
             random.shuffle(random_indices)
 
@@ -1164,13 +1160,8 @@ class SDDP(object):
             scenarioset.append(w)
             created_scenarios += 1
 
-            if Constants.Always_NrInSampleScnearioTest_Scenario == 1 and nrscenar < Constants.NrInSampleScnearioTest:  # Random sampling with repetition
-                random_index = random.randint(0, nrscenar - 1)
-                for k in range(len(indexstage)):
-                    if self.NrSAAScenarioInPeriod[self.ForwardStage[k].TimeObservationStage] > 0:
-                        indexstage[k] = random_index % self.NrSAAScenarioInPeriod[self.ForwardStage[k].TimeObservationStage]
-                        random_index //= self.NrSAAScenarioInPeriod[self.ForwardStage[k].TimeObservationStage]
-            elif Constants.NrInSampleScnearioTest < NrScenariosBasedonPercentage:  # Random sampling without repetition
+            if Constants.NrInSampleScnearioTest < NrScenariosBasedonPercentage:     #When we do not want to creat all scenarios! We want random Sampling!
+                # Use the shuffled random indices
                 current_index = random_indices[created_scenarios]
                 for k in range(len(indexstage)):
                     if self.NrSAAScenarioInPeriod[self.ForwardStage[k].TimeObservationStage] > 0:

@@ -75,7 +75,7 @@ class Constants( object ):
 
     #Code parameter
     Infinity = 9999999999999999
-    AlgorithmTimeLimit = 2 * 30     #Whatever you have here, then in the SDDP algorithm, (AlgorithmTimeLimit * |T|) will be used as time limit.
+    AlgorithmTimeLimit = 0.5 * 60     #Whatever you have here, then in the SDDP algorithm, (AlgorithmTimeLimit * |T|) will be used as time limit.
     MIPTimeLimit = 12 * 3600            #This is only a time limit to solve the extended model via MIP.
 
     MIPBasedOnSymetricTree = True 
@@ -131,7 +131,6 @@ class Constants( object ):
     SDDPNrItNoImproveLBBeforeTest = 150
     PercentageInSampleScnearioTest = 100             # Do Not Change it, The next one is important which shows the minimum number of in-sample scenarios used to test convergence!
     NrInSampleScnearioTest = 1000                    # In fact we use min(NrofTotalInSampleScenarios, 1000)
-    Always_NrInSampleScnearioTest_Scenario = 1       # If you set this parameter to 1, then when you have less than "NrInSampleScnearioTest", for example in 2-stage model with 100 total scenarios compared to 1000 in-sample scenario for test, then it repeats the sampling until reaching "NrInSampleScnearioTest" to be fare for comparison with other stages!
     SDDPDurationBeforeIncreaseForwardSample = 3600
     SDDPSaveInExcel = False
     SDDPFixSetupStrategy = False

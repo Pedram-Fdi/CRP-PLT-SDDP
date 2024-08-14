@@ -1230,10 +1230,13 @@ class MIPSolver(object):
                             for l in self.Instance.DemandSet:
 
                                 vars_q = [self.GetIndexPatientTransferVariable(t, j, c, l, u, m, w) 
-                                          for u in self.Instance.FacilitySet 
-                                          for m in self.Instance.RescueVehicleSet]
+                                            for u in self.Instance.FacilitySet
+                                            if self.Instance.J_u[u][j] == 1
+                                            for m in self.Instance.RescueVehicleSet]
+
                                 coeff_q = [1.0  
                                            for u in self.Instance.FacilitySet 
+                                           if self.Instance.J_u[u][j] == 1
                                            for m in self.Instance.RescueVehicleSet]
 
                                 vars_mu = [self.GetIndexUnsatisfiedPatientsVariable(t, j, c, l, w)]
@@ -1263,7 +1266,7 @@ class MIPSolver(object):
                                 
                                 self.LowMedPriorityPatientFlowConstraintNR[w][t][j][c][l] = constraint
 
-                                '''
+                                
                                 if Constants.Debug:  
                                     print(f"Vars_q: {vars_q}")
                                     print(f"Coeff_q: {coeff_q}")
@@ -1277,9 +1280,10 @@ class MIPSolver(object):
                                     print(f"RightHandSide: {RightHandSide}")
                                     
                                     print(f"Added constraint: {constraint_name}")
-                                '''
+                                
         if Constants.Debug: print("Debug_Average_Demand_LowMed: ", Debug_Average_Demand)
         if Constants.Debug: print("-------------------")
+    
     def CreateHighPriorityPatientFlowConstraint(self):
         if Constants.Debug: print("\n We are in 'MIPSolver' Class -- CreateHighPriorityPatientFlowConstraint")
         if Constants.Debug: Debug_Average_Demand = 0
@@ -1292,9 +1296,12 @@ class MIPSolver(object):
 
                                 vars_q = [self.GetIndexPatientTransferVariable(t, j, c, l, h, m, w) 
                                           for h in self.Instance.HospitalSet 
+                                          if self.Instance.J_u[h][j] == 1
                                           for m in self.Instance.RescueVehicleSet]
+
                                 coeff_q = [1.0  
                                            for h in self.Instance.HospitalSet 
+                                           if self.Instance.J_u[h][j] == 1
                                            for m in self.Instance.RescueVehicleSet]
 
                                 vars_mu = [self.GetIndexUnsatisfiedPatientsVariable(t, j, c, l, w)]
@@ -1342,6 +1349,7 @@ class MIPSolver(object):
                                 '''
         if Constants.Debug: print("Debug_Average_Demand_High: ", Debug_Average_Demand)
         print("-------")
+    
     def CreateLowMedPriorityPatientServiceConstraint(self):
         if Constants.Debug: print("\n We are in 'MIPSolver' Class -- CreateLowMedPriorityPatientServiceConstraint")
 

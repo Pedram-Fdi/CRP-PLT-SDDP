@@ -87,10 +87,10 @@ def parseArguments():
         parser.add_argument("-seq", "--sequencetype", help="the sampling Method ---> Halton/LHS", type=str, required=True)
         parser.add_argument("-LBF", "--lbfpercentage", help="Percentage of Scenarios to be used for LBF", type=int, required=True)
     else:
-        parser.add_argument("--Action", help="GenerateInstances/Solve/DebugLPFile/Explanation", type=str, default="GenerateInstances") 
-        parser.add_argument("--Instance", help="Name of the instance.", type=str, default="2_5_5_5_3_4_1_CRP") 
+        parser.add_argument("--Action", help="GenerateInstances/Solve/DebugLPFile/Explanation", type=str, default="Solve") 
+        parser.add_argument("--Instance", help="Name of the instance.", type=str, default="2_5_5_5_3_4_2_CRP") 
         parser.add_argument("--Model", help="Average/Two_Stage/Multi_Stage/HeuristicMulti_Stage .", type=str, default="Multi_Stage")
-        parser.add_argument("--NrScenario", help="The number of scenarios used for optimization (all10 ...)", type=str, default="all5")
+        parser.add_argument("--NrScenario", help="The number of scenarios used for optimization (all10 ...)", type=str, default="all3")
         parser.add_argument("--ScenarioGeneration", help="MC/QMC/RQMC.", type=str, default="RQMC")
         parser.add_argument("-m", "--method", help="method used to solve ---- MIP/NBD/SDDP/PH/Hybrid/MLLocalSearch", type=str, default = "SDDP")
         parser.add_argument("-c", "--mipsetting", help="Enhancements: JustStrongCut/JustLBF/JustWarmUp/JustMultiCut/NoEnhancements/NoStrongCut/NoLBF/NoWarmUp/NoMultiCut/AllEnhancements",  default = "AllEnhancements")
@@ -100,7 +100,7 @@ def parseArguments():
     # Optional arguments
     parser.add_argument("-s", "--ScenarioSeed", help="The seed used for scenario generation", type=int, default = -1)
     parser.add_argument("-p", "--policy", help="NearestNeighbor", type=str, default="_")
-    parser.add_argument("-n", "--nrevaluation", help="nr scenario used for evaluation.", type=int, default = 2500)
+    parser.add_argument("-n", "--nrevaluation", help="nr scenario used for evaluation.", type=int, default = 7)
     parser.add_argument("-f", "--fixuntil", help="Use with VSS action, how many periods are fixed", type=int, default = 0)
     parser.add_argument("-e", "--evpi", help="if true the evpi model is consdiered",  default=False, action = 'store_true')
     parser.add_argument("-t", "--timehorizon", help="the time horizon used in shiting window.", type=int, default = 1)
@@ -171,13 +171,13 @@ def parseArguments():
 def GenerateInstances():
     if Constants.Debug: print("\nWe are in the 'GenerateInstances' function")
 
-    for t in range(2, 5, 1):
-        for i in range(5, 21, 5):
+    for t in range(2, 3, 1):
+        for i in range(5, 6, 5):
             for h in range(5, 6, 5):
-                for l in range(5, 21, 5):
+                for l in range(5, 6, 5):
                     for m in range(3, 4, 1):
                         for c in range (4, 5, 4):
-                            for InstanceNumber in range (1, 9, 1):
+                            for InstanceNumber in range (2, 3, 1):
                                 if c not in (4, 8):
                                     raise ValueError("Invalid value for Blood GP. Blood group (c) should only be 4 or 8.")
 

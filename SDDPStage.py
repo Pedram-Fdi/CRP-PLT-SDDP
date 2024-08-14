@@ -2990,9 +2990,12 @@ class SDDPStage(object):
 
                                 vars_q = [self.GetIndexPatientTransferVariable(j, c, l, u, m, t, w)
                                           for u in self.Instance.FacilitySet 
+                                          if self.Instance.J_u[u][j] == 1
                                           for m in self.Instance.RescueVehicleSet]
+
                                 coeff_q = [1.0  
                                           for u in self.Instance.FacilitySet 
+                                          if self.Instance.J_u[u][j] == 1
                                           for m in self.Instance.RescueVehicleSet]
                                 
                                 vars_mu = [self.GetIndexUnsatisfiedPatientsVariable(j, c, l, t, w)]
@@ -3045,9 +3048,11 @@ class SDDPStage(object):
 
                                 vars_q = [self.GetIndexPatientTransferVariable(j, c, l, h, m, t, w)
                                           for h in self.Instance.HospitalSet 
+                                          if self.Instance.J_u[h][j] == 1
                                           for m in self.Instance.RescueVehicleSet]
                                 coeff_q = [1.0  
                                           for h in self.Instance.HospitalSet 
+                                          if self.Instance.J_u[h][j] == 1
                                           for m in self.Instance.RescueVehicleSet]
                                 
                                 vars_mu = [self.GetIndexUnsatisfiedPatientsVariable(j, c, l, t, w)]
@@ -4232,6 +4237,7 @@ class SDDPStage(object):
                                     ############# q
                                     q_index = [self.GetIndexPIPatientTransferVariable(j, c, l, u, m, t, wevpi, w) 
                                                 for u in self.Instance.FacilitySet 
+                                                if self.Instance.J_u[u][j] == 1
                                                 for m in self.Instance.RescueVehicleSet]
                                     if t in self.PeriodsInGlobalMIPPatientTransfer:
                                         q_var = [self.PatientTransfer_Var_SDDP[q_index[i]] for i in range(len(q_index))]
@@ -4299,7 +4305,8 @@ class SDDPStage(object):
 
                                         ############# q
                                         q_index = [self.GetIndexPIPatientTransferVariable(j, c, l, h, m, t, wevpi, w) 
-                                                    for h in self.Instance.HospitalSet 
+                                                    for h in self.Instance.HospitalSet
+                                                    if self.Instance.J_u[h][j] == 1 
                                                     for m in self.Instance.RescueVehicleSet]
                                         if t in self.PeriodsInGlobalMIPPatientTransfer:
                                             q_var = [self.PatientTransfer_Var_SDDP[q_index[i]] for i in range(len(q_index))]
