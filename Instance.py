@@ -51,7 +51,7 @@ class Instance(object):
         self.Number_of_Planning_Days = 1;               # Each stage is one day
 
         self.Do_you_want_Random_Initial_Platelet_Inventory = 1
-        self.Do_you_want_Dependent_Hospital_Capacities_based_on_Demands = 1
+        self.Do_you_want_Dependent_Hospital_Capacities_based_on_Demands = 0
         self.Safety_Factor_Initital_Platelet = 1
         self.Safety_Factor_Rescue_Vehicle_ACF = 3           #For having 0 Shortage (For demand between [50,200], its defaul is on 3)
         self.Safety_Factor_Rescue_Vehicle_Hospital = 2.5      #For having 0 Shortage (For demand between [50,200], its defaul is on 1.5)
@@ -64,8 +64,8 @@ class Instance(object):
         self.NrTimeBucketWithoutUncertainty = -1
 
         #Domain of Parameters
-        self.Min_ACF_Bed_Capacity = 500
-        self.Max_ACF_Bed_Capacity = 1000
+        self.Min_ACF_Bed_Capacity = 400
+        self.Max_ACF_Bed_Capacity = 800
 
         self.m2_Required_for_Each_Patient = 1.3
         self.Cost_of_Each_m2 = 25
@@ -113,8 +113,8 @@ class Instance(object):
         self.Min_Initial_Platelet_Inventory = 50
         self.Max_Initial_Platelet_Inventory = 50
 
-        self.Min_Hospital_Bed_Capacity = 200
-        self.Max_Hospital_Bed_Capacity = 300
+        self.Min_Hospital_Bed_Capacity = 500
+        self.Max_Hospital_Bed_Capacity = 1000
         self.Hospital_Bed_Capacity_STD_Coeff = 0.25
 
         self.Nominal_Rescue_Vehicle_Capacity = -1
@@ -215,7 +215,8 @@ class Instance(object):
         for u in self.FacilitySet:
             if u < self.NrHospitals:
                 for j in self.InjuryLevelSet:
-                    self.J_u[u][j] = 1
+                    if j != 2:
+                        self.J_u[u][j] = 1
             else:
                 for j in self.InjuryLevelSet:
                     if j != 0:
