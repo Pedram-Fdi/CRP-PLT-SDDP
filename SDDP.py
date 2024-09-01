@@ -19,6 +19,11 @@ from gurobipy import *
 import os
 import itertools
 import re
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from minisom import MiniSom
+from sklearn.cluster import AffinityPropagation
+from sklearn.cluster import AgglomerativeClustering
 
 
 # This class contains the attributes and methods allowing to define the SDDP algorithm.
@@ -201,6 +206,11 @@ class SDDP(object):
         self.SetOfSAAScenarioHospitalCapacity = []
         self.SetOfSAAScenarioWholeDonor = []
         self.SetOfSAAScenarioApheresisDonor = []
+        self.FullScenarioDemand = []
+        self.FullScenarioHospitalCapacity  = []
+        self.FullScenarioWholeDonor  = []
+        self.FullScenarioApheresisDonor  = []
+        self.FullScenarioProba = []     
         self.SAAScenarioNrSet = []
         self.TrialScenarioNrSet = []
         self.IsIterationWithConvergenceTest = False
@@ -421,7 +431,6 @@ class SDDP(object):
         else:
             result = self.ForwardStage[0].ACFEstablishmentValues[scenario][acf]
             if Constants.Debug: print("Result No Core: ", result)
-
 
         return result
     
@@ -1212,108 +1221,327 @@ class SDDP(object):
             
     def GenerateSAAScenarios2(self):
         if Constants.Debug: print("\n We are in 'SDDP' Class -- (GenerateSAAScenarios2)")
-         
-        self.SAAScenarioNrSetInPeriod = [range(self.NrSAAScenarioInPeriod[t]) for t in self.Instance.TimeBucketSet]
 
-        if Constants.Debug: print("self.SAAScenarioNrSetInPeriod: ",self.SAAScenarioNrSetInPeriod)
-        SymetricDemand = [[] for t in self.Instance.TimeBucketSet]
-        SymetricHospitalCapacity = [[] for t in self.Instance.TimeBucketSet]
-        SymetricWholeDonor = [[] for t in self.Instance.TimeBucketSet]
-        SymetricApheresisDonor = [[] for t in self.Instance.TimeBucketSet]
-        SymetricProba = [[] for t in self.Instance.TimeBucketSet]               #For the probabilities, we only use "SymetricProba" in the future, because all of them have the same value
-        SymetricProbaHospital = [[] for t in self.Instance.TimeBucketSet]       #For the probabilities, we only use "SymetricProba" in the future, because all of them have the same value
-        SymetricProbaWholeDonor = [[] for t in self.Instance.TimeBucketSet]     #For the probabilities, we only use "SymetricProba" in the future, because all of them have the same value
-        SymetricProbaApheresisDonor = [[] for t in self.Instance.TimeBucketSet] #For the probabilities, we only use "SymetricProba" in the future, because all of them have the same value
-        np.random.seed(self.TestIdentifier.ScenarioSeed)
+        if Constants.ScenarioReduction != "NoReduction":
 
+            # Generate a larger set of scenarios for scenario reduction
+            self.SAAScenarioNrSetInPeriod = [range(self.NrSAAScenarioInPeriod[t]) for t in self.Instance.TimeBucketSet]
+            self.SAAScenarioNrSetInPeriod_KNN = [range(Constants.Coeeff_Init_Scen_bef_reduction * self.NrSAAScenarioInPeriod[t]) for t in self.Instance.TimeBucketSet]
 
-        for t in self.Instance.TimeBucketSet: 
-            if Constants.Debug: print(f"self.NrSAAScenarioInPeriod[t={t}]: ", self.NrSAAScenarioInPeriod[t])
-            SymetricDemand[t], SymetricProba[t] = ScenarioTreeNode.CreateDemandNormalDistributiondemand(self.Instance, t,  self.NrSAAScenarioInPeriod[t], False, self.ScenarioGenerationMethod)
-            SymetricHospitalCapacity[t], SymetricProbaHospital[t] = ScenarioTreeNode.CreateHospitalCapNormalDistribution(self.Instance, t,  self.NrSAAScenarioInPeriod[t], False, self.ScenarioGenerationMethod)
-            SymetricWholeDonor[t], SymetricProbaWholeDonor[t] = ScenarioTreeNode.CreateWholeDonorNormalDistribution(self.Instance, t,  self.NrSAAScenarioInPeriod[t], False, self.ScenarioGenerationMethod)
-            SymetricApheresisDonor[t], SymetricProbaApheresisDonor[t] = ScenarioTreeNode.CreateApheresisDonorNormalDistribution(self.Instance, t,  self.NrSAAScenarioInPeriod[t], False, self.ScenarioGenerationMethod)
+            if Constants.Debug: print("self.SAAScenarioNrSetInPeriod_KNN: ", self.SAAScenarioNrSetInPeriod_KNN)
 
-        #if Constants.Debug:
-            #print("\nSymetricDemand:", SymetricDemand)
-            #print("SymetricHospitalCapacity:", SymetricHospitalCapacity)
-            #print("SymetricWholeDonor:", SymetricWholeDonor)
-            #print("SymetricApheresisDonor:", SymetricApheresisDonor)
-            #print("SymetricProba:", SymetricProba)
+            SymetricDemand = [[] for t in self.Instance.TimeBucketSet]
+            SymetricHospitalCapacity = [[] for t in self.Instance.TimeBucketSet]
+            SymetricWholeDonor = [[] for t in self.Instance.TimeBucketSet]
+            SymetricApheresisDonor = [[] for t in self.Instance.TimeBucketSet]
+            SymetricProba = [[] for t in self.Instance.TimeBucketSet]
+            SymetricProbaHospital = [[] for t in self.Instance.TimeBucketSet]
+            SymetricProbaWholeDonor = [[] for t in self.Instance.TimeBucketSet]
+            SymetricProbaApheresisDonor = [[] for t in self.Instance.TimeBucketSet]
+            
+            np.random.seed(self.TestIdentifier.ScenarioSeed)
 
-        self.SetOfSAAScenarioDemand = [[[] for w in self.SAAScenarioNrSetInPeriod[t]] for t in self.Instance.TimeBucketSet]
-        self.SetOfSAAScenarioHospitalCapacity = [[[] for w in self.SAAScenarioNrSetInPeriod[t]] for t in self.Instance.TimeBucketSet]
-        self.SetOfSAAScenarioWholeDonor = [[[] for w in self.SAAScenarioNrSetInPeriod[t]] for t in self.Instance.TimeBucketSet]
-        self.SetOfSAAScenarioApheresisDonor = [[[] for w in self.SAAScenarioNrSetInPeriod[t]] for t in self.Instance.TimeBucketSet]
+            for t in self.Instance.TimeBucketSet:
+                SymetricDemand[t], SymetricProba[t] = ScenarioTreeNode.CreateDemandNormalDistributiondemand(self.Instance, t, Constants.Coeeff_Init_Scen_bef_reduction * self.NrSAAScenarioInPeriod[t], False, self.ScenarioGenerationMethod)
+                SymetricHospitalCapacity[t], SymetricProbaHospital[t] = ScenarioTreeNode.CreateHospitalCapNormalDistribution(self.Instance, t, Constants.Coeeff_Init_Scen_bef_reduction * self.NrSAAScenarioInPeriod[t], False, self.ScenarioGenerationMethod)
+                SymetricWholeDonor[t], SymetricProbaWholeDonor[t] = ScenarioTreeNode.CreateWholeDonorNormalDistribution(self.Instance, t, Constants.Coeeff_Init_Scen_bef_reduction * self.NrSAAScenarioInPeriod[t], False, self.ScenarioGenerationMethod)
+                SymetricApheresisDonor[t], SymetricProbaApheresisDonor[t] = ScenarioTreeNode.CreateApheresisDonorNormalDistribution(self.Instance, t, Constants.Coeeff_Init_Scen_bef_reduction * self.NrSAAScenarioInPeriod[t], False, self.ScenarioGenerationMethod)
 
-        self.Saascenarioproba = [[-1 for w in self.SAAScenarioNrSetInPeriod[t]] for t in self.Instance.TimeBucketSet]
-        
-        t = 0
-        for t in self.Instance.TimeBucketSet:
-            for w in self.SAAScenarioNrSetInPeriod[t]:
-                
-                self.SetOfSAAScenarioDemand[t][w] = [[[SymetricDemand[t][j][c][l][w] 
-                                                     for l in self.Instance.DemandSet]
-                                                     for c in self.Instance.BloodGPSet]
-                                                     for j in self.Instance.InjuryLevelSet]
+            # Populate the scenarios into the respective variables
+            self.SetOfSAAScenarioDemand = [[[] for w in self.SAAScenarioNrSetInPeriod_KNN[t]] for t in self.Instance.TimeBucketSet]
+            self.SetOfSAAScenarioHospitalCapacity = [[[] for w in self.SAAScenarioNrSetInPeriod_KNN[t]] for t in self.Instance.TimeBucketSet]
+            self.SetOfSAAScenarioWholeDonor = [[[] for w in self.SAAScenarioNrSetInPeriod_KNN[t]] for t in self.Instance.TimeBucketSet]
+            self.SetOfSAAScenarioApheresisDonor = [[[] for w in self.SAAScenarioNrSetInPeriod_KNN[t]] for t in self.Instance.TimeBucketSet]
+            self.Saascenarioproba = [[-1 for w in self.SAAScenarioNrSetInPeriod_KNN[t]] for t in self.Instance.TimeBucketSet]
 
-                self.SetOfSAAScenarioHospitalCapacity[t][w] = [SymetricHospitalCapacity[t][h][w] 
-                                                               for h in self.Instance.HospitalSet]
+            for t in self.Instance.TimeBucketSet:
+                for w in self.SAAScenarioNrSetInPeriod_KNN[t]:
+                    self.SetOfSAAScenarioDemand[t][w] = [[[SymetricDemand[t][j][c][l][w] 
+                                                        for l in self.Instance.DemandSet]
+                                                        for c in self.Instance.BloodGPSet]
+                                                        for j in self.Instance.InjuryLevelSet]
 
-                self.SetOfSAAScenarioWholeDonor[t][w] = [[SymetricWholeDonor[t][c][h][w] 
-                                                         for h in self.Instance.HospitalSet]
-                                                         for c in self.Instance.BloodGPSet]
+                    self.SetOfSAAScenarioHospitalCapacity[t][w] = [SymetricHospitalCapacity[t][h][w] 
+                                                                for h in self.Instance.HospitalSet]
 
-                self.SetOfSAAScenarioApheresisDonor[t][w] = [[SymetricApheresisDonor[t][c][u][w] 
-                                                            for u in self.Instance.FacilitySet]
+                    self.SetOfSAAScenarioWholeDonor[t][w] = [[SymetricWholeDonor[t][c][h][w] 
+                                                            for h in self.Instance.HospitalSet]
                                                             for c in self.Instance.BloodGPSet]
 
-                self.Saascenarioproba[t][w] = SymetricProba[t][w]
+                    self.SetOfSAAScenarioApheresisDonor[t][w] = [[SymetricApheresisDonor[t][c][u][w] 
+                                                                for u in self.Instance.FacilitySet]
+                                                                for c in self.Instance.BloodGPSet]
 
-        #if Constants.Debug:
-            #print("\nSetOfSAAScenarioDemand: ",self.SetOfSAAScenarioDemand)
-            #print("SetOfSAAScenarioHospitalCapacity: ",self.SetOfSAAScenarioHospitalCapacity)
-            #print("SetOfSAAScenarioWholeDonor: ",self.SetOfSAAScenarioWholeDonor)
-            #print("SetOfSAAScenarioApheresisDonor: ",self.SetOfSAAScenarioApheresisDonor)
-            #print("self.Saascenarioproba: ",self.Saascenarioproba)
+                    self.Saascenarioproba[t][w] = Constants.Coeeff_Init_Scen_bef_reduction * SymetricProba[t][w]
 
-        for stage in self.StagesSet:
-            time = self.BackwardStage[stage].TimeDecisionStage - 1
-            if Constants.Debug: print(f"Processing stage: {stage}, TimeDecisionStage: {time}")
+            # Now that the scenarios are set up, perform scenario reduction
+            self.rebuild_scenarios()
 
-            if time + max(len(self.BackwardStage[stage].RangePeriodApheresisAssignment), 1) >= 1:
-                self.BackwardStage[stage].FixedScenarioSet = self.SAAScenarioNrSetInPeriod[time]
-                self.BackwardStage[stage].FixedScenarioPobability = [self.Saascenarioproba[time][w] for w in self.SAAScenarioNrSetInPeriod[time]]
-                self.BackwardStage[stage].SAAStageCostPerScenarioWithoutCostoGopertrial = [0 for w in self.TrialScenarioNrSet]
-                if Constants.Debug: print(f"Stage {stage} scenarios and probabilities fixed for time {time}")
-            else:
-                self.BackwardStage[stage].FixedScenarioSet = [0]
-                self.BackwardStage[stage].FixedScenarioPobability = [1]
-                self.BackwardStage[stage].SAAStageCostPerScenarioWithoutCostoGopertrial = [0 for w in self.TrialScenarioNrSet]
-                if Constants.Debug: print(f"Stage {stage} default scenarios and probabilities set for time {time}")
-            
-                if Constants.Debug: print(f"self.BackwardStage[stage={stage}].FixedScenarioPobability: ",self.BackwardStage[stage].FixedScenarioPobability)
-            
             for stage in self.StagesSet:
-                if Constants.Debug: print(f"Checking if stage {stage} is not the last stage.")
-                if not self.BackwardStage[stage].IsLastStage():
-                    nextstage = stage + 1
-                    nextstagetime = self.BackwardStage[nextstage].TimeDecisionStage - 1
-                    if Constants.Debug: print(f"Stage {stage} is not the last. Proceeding to next stage: {nextstage}, NextStageTime: {nextstagetime}")
+                time = self.BackwardStage[stage].TimeDecisionStage - 1
+                if Constants.Debug: print(f"Processing stage: {stage}, TimeDecisionStage: {time}")
 
-                    self.BackwardStage[stage].FuturScenario = self.BackwardStage[nextstage].FixedScenarioSet
-                    self.BackwardStage[stage].FuturScenarProba = self.BackwardStage[nextstage].FixedScenarioPobability
-                    if Constants.Debug: print(f"BackwardStage[stage={stage}].FuturScenario: ",self.BackwardStage[stage].FuturScenario)
-                    if Constants.Debug: print(f"BackwardStage[stage={stage}].FuturScenarProba: ",self.BackwardStage[stage].FuturScenarProba)
+                if time + max(len(self.BackwardStage[stage].RangePeriodApheresisAssignment), 1) >= 1:
+                    self.BackwardStage[stage].FixedScenarioSet = self.SAAScenarioNrSetInPeriod[time]
+                    self.BackwardStage[stage].FixedScenarioPobability = [self.Saascenarioproba[time][w] for w in self.SAAScenarioNrSetInPeriod[time]]
+                    self.BackwardStage[stage].SAAStageCostPerScenarioWithoutCostoGopertrial = [0 for w in self.TrialScenarioNrSet]
+                    if Constants.Debug: print(f"Stage {stage} scenarios and probabilities fixed for time {time}")
+                else:
+                    self.BackwardStage[stage].FixedScenarioSet = [0]
+                    self.BackwardStage[stage].FixedScenarioPobability = [1]
+                    self.BackwardStage[stage].SAAStageCostPerScenarioWithoutCostoGopertrial = [0 for w in self.TrialScenarioNrSet]
+                    if Constants.Debug: print(f"Stage {stage} default scenarios and probabilities set for time {time}")
+                
+                    if Constants.Debug: print(f"self.BackwardStage[stage={stage}].FixedScenarioPobability: ",self.BackwardStage[stage].FixedScenarioPobability)
+                
+                for stage in self.StagesSet:
+                    if Constants.Debug: print(f"Checking if stage {stage} is not the last stage.")
+                    if not self.BackwardStage[stage].IsLastStage():
+                        nextstage = stage + 1
+                        nextstagetime = self.BackwardStage[nextstage].TimeDecisionStage - 1
+                        if Constants.Debug: print(f"Stage {stage} is not the last. Proceeding to next stage: {nextstage}, NextStageTime: {nextstagetime}")
+
+                        self.BackwardStage[stage].FuturScenario = self.BackwardStage[nextstage].FixedScenarioSet
+                        self.BackwardStage[stage].FuturScenarProba = self.BackwardStage[nextstage].FixedScenarioPobability
+                        if Constants.Debug: print(f"BackwardStage[stage={stage}].FuturScenario: ",self.BackwardStage[stage].FuturScenario)
+                        if Constants.Debug: print(f"BackwardStage[stage={stage}].FuturScenarProba: ",self.BackwardStage[stage].FuturScenarProba)
+                        
+                        self.ForwardStage[stage].FuturScenario = self.BackwardStage[nextstage].FixedScenarioSet
+                        self.ForwardStage[stage].FuturScenarProba = self.BackwardStage[nextstage].FixedScenarioPobability                
+                        if Constants.Debug: print(f"ForwardStage[stage={stage}].FuturScenario: ",self.ForwardStage[stage].FuturScenario)
+                        if Constants.Debug: print(f"ForwardStage[stage={stage}].FuturScenarProba: ",self.ForwardStage[stage].FuturScenarProba)
+
+                    if Constants.Debug: print(f"Computing variable indices for stage {stage} in both Forward and Backward Stages.")
+                    self.ForwardStage[stage].ComputeVariableIndices()
+                    self.BackwardStage[stage].ComputeVariableIndices()
+
+        else:
+            print("Generate SAA Scenarios with out reduction")
+            # Regular scenario generation without reduction
+            self.SAAScenarioNrSetInPeriod = [range(self.NrSAAScenarioInPeriod[t]) for t in self.Instance.TimeBucketSet]
+
+            if Constants.Debug: print("self.SAAScenarioNrSetInPeriod: ",self.SAAScenarioNrSetInPeriod)
+            SymetricDemand = [[] for t in self.Instance.TimeBucketSet]
+            SymetricHospitalCapacity = [[] for t in self.Instance.TimeBucketSet]
+            SymetricWholeDonor = [[] for t in self.Instance.TimeBucketSet]
+            SymetricApheresisDonor = [[] for t in self.Instance.TimeBucketSet]
+            SymetricProba = [[] for t in self.Instance.TimeBucketSet]               #For the probabilities, we only use "SymetricProba" in the future, because all of them have the same value
+            SymetricProbaHospital = [[] for t in self.Instance.TimeBucketSet]       #For the probabilities, we only use "SymetricProba" in the future, because all of them have the same value
+            SymetricProbaWholeDonor = [[] for t in self.Instance.TimeBucketSet]     #For the probabilities, we only use "SymetricProba" in the future, because all of them have the same value
+            SymetricProbaApheresisDonor = [[] for t in self.Instance.TimeBucketSet] #For the probabilities, we only use "SymetricProba" in the future, because all of them have the same value
+            np.random.seed(self.TestIdentifier.ScenarioSeed)
+
+
+            for t in self.Instance.TimeBucketSet: 
+                if Constants.Debug: print(f"self.NrSAAScenarioInPeriod[t={t}]: ", self.NrSAAScenarioInPeriod[t])
+                SymetricDemand[t], SymetricProba[t] = ScenarioTreeNode.CreateDemandNormalDistributiondemand(self.Instance, t,  self.NrSAAScenarioInPeriod[t], False, self.ScenarioGenerationMethod)
+                SymetricHospitalCapacity[t], SymetricProbaHospital[t] = ScenarioTreeNode.CreateHospitalCapNormalDistribution(self.Instance, t,  self.NrSAAScenarioInPeriod[t], False, self.ScenarioGenerationMethod)
+                SymetricWholeDonor[t], SymetricProbaWholeDonor[t] = ScenarioTreeNode.CreateWholeDonorNormalDistribution(self.Instance, t,  self.NrSAAScenarioInPeriod[t], False, self.ScenarioGenerationMethod)
+                SymetricApheresisDonor[t], SymetricProbaApheresisDonor[t] = ScenarioTreeNode.CreateApheresisDonorNormalDistribution(self.Instance, t,  self.NrSAAScenarioInPeriod[t], False, self.ScenarioGenerationMethod)
+
+
+            self.SetOfSAAScenarioDemand = [[[] for w in self.SAAScenarioNrSetInPeriod[t]] for t in self.Instance.TimeBucketSet]
+            self.SetOfSAAScenarioHospitalCapacity = [[[] for w in self.SAAScenarioNrSetInPeriod[t]] for t in self.Instance.TimeBucketSet]
+            self.SetOfSAAScenarioWholeDonor = [[[] for w in self.SAAScenarioNrSetInPeriod[t]] for t in self.Instance.TimeBucketSet]
+            self.SetOfSAAScenarioApheresisDonor = [[[] for w in self.SAAScenarioNrSetInPeriod[t]] for t in self.Instance.TimeBucketSet]
+
+            self.Saascenarioproba = [[-1 for w in self.SAAScenarioNrSetInPeriod[t]] for t in self.Instance.TimeBucketSet]
+            
+            t = 0
+            for t in self.Instance.TimeBucketSet:
+                for w in self.SAAScenarioNrSetInPeriod[t]:
                     
-                    self.ForwardStage[stage].FuturScenario = self.BackwardStage[nextstage].FixedScenarioSet
-                    self.ForwardStage[stage].FuturScenarProba = self.BackwardStage[nextstage].FixedScenarioPobability                
-                    if Constants.Debug: print(f"ForwardStage[stage={stage}].FuturScenario: ",self.ForwardStage[stage].FuturScenario)
-                    if Constants.Debug: print(f"ForwardStage[stage={stage}].FuturScenarProba: ",self.ForwardStage[stage].FuturScenarProba)
+                    self.SetOfSAAScenarioDemand[t][w] = [[[SymetricDemand[t][j][c][l][w] 
+                                                        for l in self.Instance.DemandSet]
+                                                        for c in self.Instance.BloodGPSet]
+                                                        for j in self.Instance.InjuryLevelSet]
 
-                if Constants.Debug: print(f"Computing variable indices for stage {stage} in both Forward and Backward Stages.")
-                self.ForwardStage[stage].ComputeVariableIndices()
-                self.BackwardStage[stage].ComputeVariableIndices()
+                    self.SetOfSAAScenarioHospitalCapacity[t][w] = [SymetricHospitalCapacity[t][h][w] 
+                                                                for h in self.Instance.HospitalSet]
+
+                    self.SetOfSAAScenarioWholeDonor[t][w] = [[SymetricWholeDonor[t][c][h][w] 
+                                                            for h in self.Instance.HospitalSet]
+                                                            for c in self.Instance.BloodGPSet]
+
+                    self.SetOfSAAScenarioApheresisDonor[t][w] = [[SymetricApheresisDonor[t][c][u][w] 
+                                                                for u in self.Instance.FacilitySet]
+                                                                for c in self.Instance.BloodGPSet]
+
+                    self.Saascenarioproba[t][w] = SymetricProba[t][w]
+
+
+            for stage in self.StagesSet:
+                time = self.BackwardStage[stage].TimeDecisionStage - 1
+                if Constants.Debug: print(f"Processing stage: {stage}, TimeDecisionStage: {time}")
+
+                if time + max(len(self.BackwardStage[stage].RangePeriodApheresisAssignment), 1) >= 1:
+                    self.BackwardStage[stage].FixedScenarioSet = self.SAAScenarioNrSetInPeriod[time]
+                    self.BackwardStage[stage].FixedScenarioPobability = [self.Saascenarioproba[time][w] for w in self.SAAScenarioNrSetInPeriod[time]]
+                    self.BackwardStage[stage].SAAStageCostPerScenarioWithoutCostoGopertrial = [0 for w in self.TrialScenarioNrSet]
+                    if Constants.Debug: print(f"Stage {stage} scenarios and probabilities fixed for time {time}")
+                else:
+                    self.BackwardStage[stage].FixedScenarioSet = [0]
+                    self.BackwardStage[stage].FixedScenarioPobability = [1]
+                    self.BackwardStage[stage].SAAStageCostPerScenarioWithoutCostoGopertrial = [0 for w in self.TrialScenarioNrSet]
+                    if Constants.Debug: print(f"Stage {stage} default scenarios and probabilities set for time {time}")
+                
+                    if Constants.Debug: print(f"self.BackwardStage[stage={stage}].FixedScenarioPobability: ",self.BackwardStage[stage].FixedScenarioPobability)
+                
+                for stage in self.StagesSet:
+                    if Constants.Debug: print(f"Checking if stage {stage} is not the last stage.")
+                    if not self.BackwardStage[stage].IsLastStage():
+                        nextstage = stage + 1
+                        nextstagetime = self.BackwardStage[nextstage].TimeDecisionStage - 1
+                        if Constants.Debug: print(f"Stage {stage} is not the last. Proceeding to next stage: {nextstage}, NextStageTime: {nextstagetime}")
+
+                        self.BackwardStage[stage].FuturScenario = self.BackwardStage[nextstage].FixedScenarioSet
+                        self.BackwardStage[stage].FuturScenarProba = self.BackwardStage[nextstage].FixedScenarioPobability
+                        if Constants.Debug: print(f"BackwardStage[stage={stage}].FuturScenario: ",self.BackwardStage[stage].FuturScenario)
+                        if Constants.Debug: print(f"BackwardStage[stage={stage}].FuturScenarProba: ",self.BackwardStage[stage].FuturScenarProba)
+                        
+                        self.ForwardStage[stage].FuturScenario = self.BackwardStage[nextstage].FixedScenarioSet
+                        self.ForwardStage[stage].FuturScenarProba = self.BackwardStage[nextstage].FixedScenarioPobability                
+                        if Constants.Debug: print(f"ForwardStage[stage={stage}].FuturScenario: ",self.ForwardStage[stage].FuturScenario)
+                        if Constants.Debug: print(f"ForwardStage[stage={stage}].FuturScenarProba: ",self.ForwardStage[stage].FuturScenarProba)
+
+                    if Constants.Debug: print(f"Computing variable indices for stage {stage} in both Forward and Backward Stages.")
+                    self.ForwardStage[stage].ComputeVariableIndices()
+                    self.BackwardStage[stage].ComputeVariableIndices()
+
+    def rebuild_scenarios(self):
+        # This function performs the scenario reduction using a KNN-based, SOM-based, AP-based, or Hybrid_KNN_SOM-based approach depending on the scenario reduction method specified
+        for t in self.Instance.TimeBucketSet:
+            # Extract features for clustering
+            features = self.extract_scenario_features(t)
+
+            # Check if all feature vectors have consistent length
+            feature_lengths = [len(f) for f in features]
+            #print(f"Feature lengths: {feature_lengths}")  # Debugging line
+
+            # Scale the features
+            scaler = StandardScaler()
+            scaled_features = scaler.fit_transform(features)
+
+            if Constants.ScenarioReduction == "KMeans":
+                print("----- Applying -KMeans- For Scenario Reduction -----")
+                # Apply KMeans clustering
+                kmeans = KMeans(n_clusters=self.NrSAAScenarioInPeriod[t], random_state=0).fit(scaled_features)
+                selected_scenarios = []
+                for cluster_id in range(self.NrSAAScenarioInPeriod[t]):
+                    cluster_indices = [i for i, label in enumerate(kmeans.labels_) if label == cluster_id]
+                    selected_scenarios.append(cluster_indices[0])  # Pick the first scenario in each cluster
+
+            elif Constants.ScenarioReduction == "SOM":
+                print("----- Applying -SOM- For Scenario Reduction -----")
+                # Apply SOM-based clustering
+                som = MiniSom(x=self.NrSAAScenarioInPeriod[t], y=1, input_len=len(scaled_features[0]), sigma=1.0, learning_rate=0.5)
+                som.random_weights_init(scaled_features)
+                som.train_random(scaled_features, num_iteration=100)
+
+                # Get the winning neurons (clusters) for each scenario
+                winner_coordinates = np.array([som.winner(x) for x in scaled_features])
+                winner_indices = np.ravel_multi_index(winner_coordinates.T, (self.NrSAAScenarioInPeriod[t], 1))
+
+                # Initialize the list of selected scenarios
+                selected_scenarios = []
+
+                # Ensure that each cluster has at least one scenario
+                for i in range(self.NrSAAScenarioInPeriod[t]):
+                    indices_in_cluster = np.where(winner_indices == i)[0]
+                    if len(indices_in_cluster) > 0:
+                        selected_scenarios.append(indices_in_cluster[0])  # Select the first scenario in each cluster
+                    else:
+                        # If a cluster is empty, find the closest scenario to the cluster's neuron
+                        closest_scenario = np.argmin([np.linalg.norm(scaled_features - som.get_weights()[i]) for _ in scaled_features])
+                        selected_scenarios.append(closest_scenario)
+
+                # If fewer scenarios were selected due to empty clusters, select additional scenarios
+                if len(selected_scenarios) < self.NrSAAScenarioInPeriod[t]:
+                    remaining_scenarios = set(range(len(scaled_features))) - set(selected_scenarios)
+                    additional_scenarios = list(remaining_scenarios)[:self.NrSAAScenarioInPeriod[t] - len(selected_scenarios)]
+                    selected_scenarios.extend(additional_scenarios)
+
+                # Make sure the number of selected scenarios is exactly what is needed
+                selected_scenarios = selected_scenarios[:self.NrSAAScenarioInPeriod[t]]
+            
+            elif Constants.ScenarioReduction == "Hierarchical":
+                print("----- Applying -Hierarchical- For Scenario Reduction -----")
+                # Apply Hierarchical Clustering
+                hierarchical = AgglomerativeClustering(n_clusters=self.NrSAAScenarioInPeriod[t])
+                labels = hierarchical.fit_predict(scaled_features)
+                selected_scenarios = []
+                for cluster_id in range(self.NrSAAScenarioInPeriod[t]):
+                    cluster_indices = [i for i, label in enumerate(labels) if label == cluster_id]
+                    selected_scenarios.append(cluster_indices[0])  # Pick the first scenario in each cluster
+            
+            elif Constants.ScenarioReduction == "Hierarchical_Diverse":
+                print("----- Applying -Hierarchical (Diverse Selection)- For Scenario Reduction -----")
+                # Apply Hierarchical Clustering
+                hierarchical = AgglomerativeClustering(n_clusters=self.NrSAAScenarioInPeriod[t])
+                labels = hierarchical.fit_predict(scaled_features)
+                selected_scenarios = []
+                
+                # Initialize with the first scenario from the first cluster
+                first_scenario = np.argmax(np.linalg.norm(scaled_features - np.mean(scaled_features, axis=0), axis=1))
+                selected_scenarios.append(first_scenario)
+                
+                # Select the remaining scenarios by maximizing the minimum distance to already selected scenarios
+                for _ in range(1, self.NrSAAScenarioInPeriod[t]):
+                    max_min_dist = -1
+                    best_scenario = None
+                    for i, feature in enumerate(scaled_features):
+                        if i in selected_scenarios:
+                            continue
+                        min_dist = np.min([np.linalg.norm(feature - scaled_features[s]) for s in selected_scenarios])
+                        if min_dist > max_min_dist:
+                            max_min_dist = min_dist
+                            best_scenario = i
+                    selected_scenarios.append(best_scenario)
+
+            else:
+                raise ValueError("Invalid Scenario Reduction Method. Use 'KNN', 'SOM'.")
+
+            # Rebuild the reduced scenarios
+            self.SetOfSAAScenarioDemand[t] = [self.SetOfSAAScenarioDemand[t][w] for w in selected_scenarios]
+            self.SetOfSAAScenarioHospitalCapacity[t] = [self.SetOfSAAScenarioHospitalCapacity[t][w] for w in selected_scenarios]
+            self.SetOfSAAScenarioWholeDonor[t] = [self.SetOfSAAScenarioWholeDonor[t][w] for w in selected_scenarios]
+            self.SetOfSAAScenarioApheresisDonor[t] = [self.SetOfSAAScenarioApheresisDonor[t][w] for w in selected_scenarios]
+            self.Saascenarioproba[t] = [self.Saascenarioproba[t][w] for w in selected_scenarios]
+
+    def extract_scenario_features(self, t):
+        features = []
+        for w in self.SAAScenarioNrSetInPeriod_KNN[t]:
+            # Flatten the demand
+            demand = []
+            for j in self.Instance.InjuryLevelSet:
+                for c in self.Instance.BloodGPSet:
+                    for l in self.Instance.DemandSet:
+                        demand.append(self.SetOfSAAScenarioDemand[t][w][j][c][l])
+
+            # Flatten the hospital capacity
+            hospital_capacity = self.SetOfSAAScenarioHospitalCapacity[t][w]
+
+            # Flatten the whole donors
+            whole_donor = []
+            for c in self.Instance.BloodGPSet:
+                for h in self.Instance.HospitalSet:
+                    whole_donor.append(self.SetOfSAAScenarioWholeDonor[t][w][c][h])
+
+            # Flatten the apheresis donors
+            apheresis_donor = []
+            for c in self.Instance.BloodGPSet:
+                for u in self.Instance.FacilitySet:
+                    apheresis_donor.append(self.SetOfSAAScenarioApheresisDonor[t][w][c][u])
+
+            # Combine all into a single feature vector
+            feature_vector = demand + hospital_capacity + whole_donor + apheresis_donor
+
+            # Check if feature_vector length is consistent
+            #print(f"Scenario {w} feature vector length: {len(feature_vector)}")  # Debugging line
+
+            features.append(feature_vector)
+        
+        return features
 
     def WriteInTraceFile(self, string):
         if Constants.Debug: print("\n We are in 'SDDP' Class -- (WriteInTraceFile)")
@@ -1566,6 +1794,7 @@ class SDDP(object):
                     print("SAA Hospital Capacity at stage %r in scenario %r:\n %r" % (t, w, self.SetOfSAAScenarioHospitalCapacity[t][w]))
                     print("SAA WholeDonors at stage %r in scenario %r:\n %r" % (t, w, self.SetOfSAAScenarioWholeDonor[t][w]))
                     print("SAA ApheresisDonors at stage %r in scenario %r:\n %r" % (t, w, self.SetOfSAAScenarioApheresisDonor[t][w]))
+                    print("SAA Saascenarioproba at stage %r :\n %r" % (t, self.Saascenarioproba[t]))
 
         if self.TestIdentifier.Model == Constants.ModelHeuristicMulti_Stage or self.TestIdentifier.Method == Constants.Hybrid or self.TestIdentifier.SDDPSetting == Constants.JustYFix:
             Constants.SDDPGenerateCutWith2Stage = False

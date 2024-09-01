@@ -211,7 +211,7 @@ class Evaluator( object ):
         # Data for the "Generic Information" sheet
         generic_data = self.TestIdentifier.GetAsStringList() + self.EvalutorIdentificator.GetAsStringList()
         generic_columns = ["Instance", "Model", "Method", "ScenarioGeneration", "NrScenario", "ScenarioSeed", "EVPI", "NrForwardScenario", 
-                        "mipsetting", "SDDPSetting", "HybridPHSetting", "MLLocalSearchSetting", "SamplingSeq.", "LBFPercentage", "Policy Generation", "NrEvaluation", 
+                        "mipsetting", "SDDPSetting", "HybridPHSetting", "MLLocalSearchSetting", "SamplingSeq.", "LBFPercentage", "ClusteringMethod", "InitNumScenCoeff", "Policy Generation", "NrEvaluation", 
                         "Time Horizon", "All Scenario"]
         generic_df = pd.DataFrame([generic_data], columns=generic_columns) 
 

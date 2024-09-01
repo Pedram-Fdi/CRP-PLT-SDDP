@@ -51,9 +51,9 @@ class Instance(object):
         self.Number_of_Planning_Days = 1;               # Each stage is one day
 
         self.Do_you_want_Random_Initial_Platelet_Inventory = 1
-        self.Do_you_want_Dependent_Hospital_Capacities_based_on_Demands = 0
+        self.Do_you_want_Dependent_Hospital_Capacities_based_on_Demands = 1
         self.Safety_Factor_Initital_Platelet = 1
-        self.Safety_Factor_Rescue_Vehicle_ACF = 3           #For having 0 Shortage (For demand between [50,200], its defaul is on 3)
+        self.Safety_Factor_Rescue_Vehicle_ACF = 5           #For having 0 Shortage (For demand between [50,200], its defaul is on 3)
         self.Safety_Factor_Rescue_Vehicle_Hospital = 2.5      #For having 0 Shortage (For demand between [50,200], its defaul is on 1.5)
         self.Rquired_Time_For_One_Apheresis_collection = 90   # In Minutes        
         
@@ -64,8 +64,8 @@ class Instance(object):
         self.NrTimeBucketWithoutUncertainty = -1
 
         #Domain of Parameters
-        self.Min_ACF_Bed_Capacity = 400
-        self.Max_ACF_Bed_Capacity = 800
+        self.Min_ACF_Bed_Capacity = 100
+        self.Max_ACF_Bed_Capacity = 400
 
         self.m2_Required_for_Each_Patient = 1.3
         self.Cost_of_Each_m2 = 25
@@ -88,10 +88,10 @@ class Instance(object):
         self.Min_WholeExtraction_Cost = 0.0001
         self.Max_WholeExtraction_Cost = 0.0001
 
-        self.Min_Total_Apheresis_Machine_ACF = 50
-        self.Max_Total_Apheresis_Machine_ACF = 50
+        self.Min_Total_Apheresis_Machine_ACF = 40 
+        self.Max_Total_Apheresis_Machine_ACF = 40 
         
-        self.Min_Demand_in_Each_Location = 50
+        self.Min_Demand_in_Each_Location = 0
         self.Max_Demand_in_Each_Location = 250
 
         self.blood_group_percentages_8 = {
@@ -105,24 +105,24 @@ class Instance(object):
 
         # Injury level percentages
         self.Priority_Patient_Percent = {
-            0: 0.40,  # Low priority
+            0: 0.30,  # High priority
             1: 0.30,  # Medium priority
-            2: 0.30   # High priority
+            2: 0.40   # Low priority
         }
 
         self.Min_Initial_Platelet_Inventory = 50
         self.Max_Initial_Platelet_Inventory = 50
 
-        self.Min_Hospital_Bed_Capacity = 500
-        self.Max_Hospital_Bed_Capacity = 1000
-        self.Hospital_Bed_Capacity_STD_Coeff = 0.25
+        self.Min_Hospital_Bed_Capacity = 200
+        self.Max_Hospital_Bed_Capacity = 300
+        self.Hospital_Bed_Capacity_STD_Coeff = 0.50
 
         self.Nominal_Rescue_Vehicle_Capacity = -1
         self.Hospital_Position = []
         self.Min_Casualty_Shortage_Cost = 150000
         self.Max_Casualty_Shortage_Cost = 150000
 
-        self.High_Priority_Postponement_Cost = 900
+        self.High_Priority_Postponement_Cost = 9000
 
         self.Min_Number_of_Apheresis_Machines_Hospital = 10
         self.Max_Number_of_Apheresis_Machines_Hospital = 10
@@ -130,11 +130,11 @@ class Instance(object):
         #References for the number of blood donors:
         # https://www.popsci.com/health/donate-blood-mass-shootings-disasters/
 
-        self.Min_Number_of_Whole_Blood_Donors_in_Each_Period_in_Each_Location = 100 
-        self.Max_Number_of_Whole_Blood_Donors_in_Each_Period_in_Each_Location = 500 
+        self.Min_Number_of_Whole_Blood_Donors_in_Each_Period_in_Each_Location = 200 
+        self.Max_Number_of_Whole_Blood_Donors_in_Each_Period_in_Each_Location = 600 
 
         self.Min_Number_of_Apheresis_Donors_in_Each_Period_in_Each_Location = 100
-        self.Max_Number_of_Apheresis_Donors_in_Each_Period_in_Each_Location = 400
+        self.Max_Number_of_Apheresis_Donors_in_Each_Period_in_Each_Location = 500
 
         # Only Parameters used in the Mathematical Model
         self.Total_Budget_ACF_Establishment = -1
@@ -215,8 +215,7 @@ class Instance(object):
         for u in self.FacilitySet:
             if u < self.NrHospitals:
                 for j in self.InjuryLevelSet:
-                    if j != 2:
-                        self.J_u[u][j] = 1
+                    self.J_u[u][j] = 1
             else:
                 for j in self.InjuryLevelSet:
                     if j != 0:
@@ -262,7 +261,7 @@ class Instance(object):
 
         ################################## Generate ACF Bed Capacities
         for i in self.ACFPPointSet:
-            New_ACF_Bed_Capacity = random.randint(self.Min_ACF_Bed_Capacity, self.Max_ACF_Bed_Capacity)
+            New_ACF_Bed_Capacity = random.randint(self.Min_ACF_Bed_Capacity, (self.Max_ACF_Bed_Capacity * max(1, round(self.NrDemandLocations/10))))
             self.ACF_Bed_Capacity.append(New_ACF_Bed_Capacity)
 
         ################################## Generate Fixed Costs ACF based on ACF Bed Capacities
@@ -357,10 +356,10 @@ class Instance(object):
         # Generate Substitution Weight Matrix
         if len(self.BloodGPSet) == 4:
             self.Substitution_Weight = [
-                [0, 30, 30, 30],
-                [10, 0, 20, 20],
-                [20, 20, 0, 10],
-                [30, 10, 10, 0]]
+                [0, 15, 15, 30],  # O is more flexible as a donor, so lower penalties
+                [10, 0, 20, 30],  # A to B is a bit less flexible
+                [20, 20, 0, 10],  # B to A is similar, with some flexibility to AB
+                [30, 15, 15, 0]]  # AB, being the universal recipient, has the highest penalties for substitution
         else:
             self.Substitution_Weight = [
                 [0, 30, 30, 30, 20, 35, 35, 35],
@@ -456,10 +455,10 @@ class Instance(object):
                 if t == 0:
                     if self.Do_you_want_Dependent_Hospital_Capacities_based_on_Demands == 1:
                         AvgDemand = (self.Min_Demand_in_Each_Location + self.Max_Demand_in_Each_Location) / 2
-                        HighMedPriority = self.Priority_Patient_Percent[1] + self.Priority_Patient_Percent[2]
-                        total_bed_2 = round(((AvgDemand * HighMedPriority * self.NrDemandLocations) / self.NrHospitals) * (1.2 ** (self.NrTimeBucket - 1)))
-                        total_bed_lower_bound = round(total_bed_2 * 0.8)
-                        total_bed_upper_bound = round(total_bed_2 * 1.2)
+                        HighMedPriority = self.Priority_Patient_Percent[0] + self.Priority_Patient_Percent[1]
+                        total_bed_2 = round(((AvgDemand * HighMedPriority * self.NrDemandLocations) / self.NrHospitals) * (1.1 ** (self.NrTimeBucket - 1)))
+                        total_bed_lower_bound = round(total_bed_2 * 0.9)
+                        total_bed_upper_bound = round(total_bed_2 * 1.1)
                         total_bed = random.randint(total_bed_lower_bound, total_bed_upper_bound)
                         #total_bed = round((total_bed_2 + (random.uniform(2, 2) * total_bed_2)) / 2)
                         self.ForecastedAverageHospital_Bed_Capacity[t][h] = total_bed 

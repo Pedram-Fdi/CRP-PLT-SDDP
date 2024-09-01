@@ -4,7 +4,7 @@ from Constants import Constants
 class TestIdentificator( object ):
     
     # Constructor
-    def __init__(self, instancename, model, method, sampling, nrscenario, scenarioseed, useevpi, nrscenarioforward, mipsetting, sddpsetting, hybridphsetting, mllocalsearchsetting, sequencetype, lbfpercentage):
+    def __init__(self, instancename, model, method, sampling, nrscenario, scenarioseed, useevpi, nrscenarioforward, mipsetting, sddpsetting, hybridphsetting, mllocalsearchsetting, sequencetype, lbfpercentage, ClusteringMethod, InitNumScenCoeff):
         if Constants.Debug: print("\n We are in 'TestIdentificator' Class -- Constructor")
         self.InstanceName = instancename
         self.Model = model
@@ -20,6 +20,8 @@ class TestIdentificator( object ):
         self.MLLocalSearchSetting = mllocalsearchsetting        
         self.SequenceType = sequencetype        
         self.LBFPercentage = lbfpercentage        
+        self.ClusteringMethod = ClusteringMethod        
+        self.InitNumScenCoeff = InitNumScenCoeff        
         self.Print_Attributes()
 
     def GetAsStringList(self):
@@ -37,7 +39,9 @@ class TestIdentificator( object ):
                   self.HybridPHSetting,
                   self.MLLocalSearchSetting,
                   self.SequenceType,
-                  "%s"%self.LBFPercentage]
+                  "%s"%self.LBFPercentage,
+                  self.ClusteringMethod,
+                  "%s"%self.InitNumScenCoeff]
         return result
  
     def GetAsString(self):
@@ -55,7 +59,9 @@ class TestIdentificator( object ):
                            self.HybridPHSetting,
                            self.MLLocalSearchSetting,
                            self.SequenceType,
-                           "%s"%self.LBFPercentage])
+                           "%s"%self.LBFPercentage,
+                           self.ClusteringMethod,
+                           "%s"%self.InitNumScenCoeff])
         return result
     
     def Print_Attributes(self):
@@ -76,4 +82,6 @@ class TestIdentificator( object ):
             print("MLLocalSearchSetting:", self.MLLocalSearchSetting)
             print("SequenceType:", self.SequenceType)
             print("LBFPercentage:", self.LBFPercentage)
+            print("ClusteringMethod:", self.ClusteringMethod)
+            print("InitNumScenCoeff:", self.InitNumScenCoeff)
             print("------\n")

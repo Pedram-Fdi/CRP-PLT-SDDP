@@ -75,7 +75,7 @@ class Constants( object ):
 
     #Code parameter
     Infinity = 9999999999999999
-    AlgorithmTimeLimit = 0.5 * 60     #Whatever you have here, then in the SDDP algorithm, (AlgorithmTimeLimit * |T|) will be used as time limit.
+    AlgorithmTimeLimit = 5 * 60     #Whatever you have here, then in the SDDP algorithm, (AlgorithmTimeLimit * |T|) will be used as time limit.
     MIPTimeLimit = 12 * 3600            #This is only a time limit to solve the extended model via MIP.
 
     MIPBasedOnSymetricTree = True 
@@ -150,6 +150,11 @@ class Constants( object ):
     UsingRelaxedMIPGapforTwoStageHeuristic = False      # When we wanna fixed our first stage variables with a 2-stage model first, it takes time to solve. So we kind of make it easier in terms of optimality gap at this stage. Note: It should be always set to False Here. Then, in the code, it gets the right value accordingly
     
     GeneratingHospitalUncertainCapacity = False         # Do not change this! I will uses it, bacause, after disasters, in the first period, we face hospital uncartainty, but, in the next periods, the uncertainty is done, and they start to increase the hospitals capacities, and that is what we are considering in our model!
+    
+    ################ Scenario Reduction in SDDP
+    ScenarioReduction = "SOM"      # Do Not Change! (You have to modify it in the main.py file)
+    Coeeff_Init_Scen_bef_reduction = 10     # Do Not Change! (You have to modify it in the main.py file)    # Whatever you set here and based on "allY", then, first the model generate "Coeeff_Init_Scen_bef_reduction * Y" scenarios, and based on KNN, finally choose Y of them!
+
     @staticmethod
     def IsDeterministic(s):
         result = s == Constants.Average
