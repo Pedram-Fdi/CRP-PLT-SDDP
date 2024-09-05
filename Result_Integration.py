@@ -4,7 +4,7 @@ import pandas as pd
 # This file integrates the results in "folder_path" which are obtained from running the code for different instances with different methods and finally saves the result in the same folder!
 
 # Directory containing the Excel files
-folder_path = r"C:\PhD\Thesis\Papers\2nd\Code\Results\Computational Results_Apheresis_40_[50,250]\Test"
+folder_path = r"C:\PhD\Thesis\Papers\2nd\Code\Results\Computationsl_Final_[0,250]"
 
 # Output file
 output_file = os.path.join(folder_path, "TotalData.xlsx")
@@ -16,6 +16,7 @@ columns = [
     "Method", 
     "ScenarioGeneration", 
     "mipsetting",
+    "ClusteringMethod",
     "SDDP LB", "SDDP Exp UB", "SDDP Safe UB", "SDDP Time",
     "Mean", "LB", "UB", "% On-Time Transfer", "% On-Time Surgery", "% Same BloodTypeInfusion"
 ]
@@ -43,6 +44,7 @@ for file_name in os.listdir(folder_path):
             method = generic_info_df.at[0, 'Method']
             scenario_generation = generic_info_df.at[0, 'ScenarioGeneration']
             mipsetting = generic_info_df.at[0, 'mipsetting']
+            ClusteringMethod = generic_info_df.at[0, 'ClusteringMethod']
                 
             # Read the InSample sheet
             insample_df = pd.read_excel(file_path, sheet_name="InSample")
@@ -74,6 +76,7 @@ for file_name in os.listdir(folder_path):
                 "Method": method,
                 "ScenarioGeneration": scenario_generation,
                 "mipsetting": mipsetting,
+                "ClusteringMethod": ClusteringMethod,
                 "SDDP LB": sddp_lb,
                 "SDDP Exp UB": sddp_exp_ub,
                 "SDDP Safe UB": sddp_safe_ub,

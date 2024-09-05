@@ -75,7 +75,7 @@ class Constants( object ):
 
     #Code parameter
     Infinity = 9999999999999999
-    AlgorithmTimeLimit = 5 * 60     #Whatever you have here, then in the SDDP algorithm, (AlgorithmTimeLimit * |T|) will be used as time limit.
+    AlgorithmTimeLimit = 5 * 3600     #Whatever you have here, then in the SDDP algorithm, (AlgorithmTimeLimit * |T|) will be used as time limit.
     MIPTimeLimit = 12 * 3600            #This is only a time limit to solve the extended model via MIP.
 
     MIPBasedOnSymetricTree = True 

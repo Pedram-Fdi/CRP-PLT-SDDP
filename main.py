@@ -90,15 +90,15 @@ def parseArguments():
 
     else:
         parser.add_argument("--Action", help="What do you want to do?", type=str, default="Solve", choices=["GenerateInstances", "Solve", "DebugLPFile"]) 
-        parser.add_argument("--Instance", help="Name of the instance.", type=str, default="3_5_5_5_3_4_1_CRP") 
+        parser.add_argument("--Instance", help="Name of the instance.", type=str, default="2_5_5_5_3_4_1_CRP") 
         parser.add_argument("--Model", help="Which Type of Model?", type=str, default="Multi_Stage", choices=["Average", "Two_Stage", "Multi_Stage", "HeuristicMulti_Stage"])
-        parser.add_argument("--NrScenario", help="The number of scenarios used for optimization (all10 ...)", type=str, default="all10")
+        parser.add_argument("--NrScenario", help="The number of scenarios used for optimization (all10 ...)", type=str, default="all5")
         parser.add_argument("--ScenarioGeneration", help="Which Type of Sampling?", type=str, default="RQMC", choices=["MC", "QMC", "RQMC"])
         parser.add_argument("-m", "--method", help="Method used to solve?", type=str, default="SDDP", choices=["MIP", "NBD", "SDDP", "PH", "Hybrid", "MLLocalSearch"])
         parser.add_argument("-c", "--mipsetting", help="Enhancements?", default="AllEnhancements", choices=["JustStrongCut", "JustLBF", "JustWarmUp", "JustMultiCut", "NoEnhancements", "NoStrongCut", "NoLBF", "NoWarmUp", "NoMultiCut", "AllEnhancements"])
         parser.add_argument("-seq", "--sequencetype", help="Which RQMC Method?", type=str, default="Halton", choices=["Halton", "LHS"])
         parser.add_argument("-LBF", "--lbfpercentage", help="Percentage of Scenarios to be used for LBF", type=int, default=100)
-        parser.add_argument("-Cluster", "--ClusteringMethod", help="The method used for Clustering Scenarios?", type=str, default="Hierarchical_Diverse", choices=["NoReduction", "KMeans", "SOM", "Hierarchical", "Hierarchical_Diverse"]) 
+        parser.add_argument("-Cluster", "--ClusteringMethod", help="The method used for Clustering Scenarios?", type=str, default="KMeansPP", choices=["NoReduction", "KMeans", "KMeansPP", "SOM", "Hierarchical", "Hierarchical_Diverse"]) 
         parser.add_argument("-InitNumScenCoeff", "--InitNumScenCoeff", help="Initial Number of Scenarios to be reduced", type=int, default=10)
 
 

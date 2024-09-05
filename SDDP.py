@@ -20,6 +20,7 @@ import os
 import itertools
 import re
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
 from minisom import MiniSom
 from sklearn.cluster import AffinityPropagation
@@ -1409,20 +1410,14 @@ class SDDP(object):
                     self.BackwardStage[stage].ComputeVariableIndices()
 
     def rebuild_scenarios(self):
-        # This function performs the scenario reduction using a KNN-based, SOM-based, AP-based, or Hybrid_KNN_SOM-based approach depending on the scenario reduction method specified
         for t in self.Instance.TimeBucketSet:
             # Extract features for clustering
             features = self.extract_scenario_features(t)
 
-            # Check if all feature vectors have consistent length
-            feature_lengths = [len(f) for f in features]
-            #print(f"Feature lengths: {feature_lengths}")  # Debugging line
-
-            # Scale the features
-            scaler = StandardScaler()
-            scaled_features = scaler.fit_transform(features)
-
             if Constants.ScenarioReduction == "KMeans":
+                # Scale the features
+                scaler = StandardScaler()           
+                scaled_features = scaler.fit_transform(features)                
                 print("----- Applying -KMeans- For Scenario Reduction -----")
                 # Apply KMeans clustering
                 kmeans = KMeans(n_clusters=self.NrSAAScenarioInPeriod[t], random_state=0).fit(scaled_features)
@@ -1431,7 +1426,24 @@ class SDDP(object):
                     cluster_indices = [i for i, label in enumerate(kmeans.labels_) if label == cluster_id]
                     selected_scenarios.append(cluster_indices[0])  # Pick the first scenario in each cluster
 
+            elif Constants.ScenarioReduction == "KMeansPP":
+                # Scale the features
+                scaler = StandardScaler()           
+                scaled_features = scaler.fit_transform(features)                
+                print("----- Applying -KMeans++- For Scenario Reduction -----")
+                # Apply KMeans++ clustering
+                kmeans_pp = KMeans(n_clusters=self.NrSAAScenarioInPeriod[t], init='k-means++', random_state=42)
+                kmeans_pp.fit(scaled_features)
+
+                selected_scenarios = []
+                for cluster_id in range(self.NrSAAScenarioInPeriod[t]):
+                    cluster_indices = [i for i, label in enumerate(kmeans_pp.labels_) if label == cluster_id]
+                    selected_scenarios.append(cluster_indices[0])  # Pick the first scenario in each cluster
+
             elif Constants.ScenarioReduction == "SOM":
+                # Scale the features
+                sc = MinMaxScaler(feature_range = (0,1))
+                scaled_features = sc.fit_transform(features)                 
                 print("----- Applying -SOM- For Scenario Reduction -----")
                 # Apply SOM-based clustering
                 som = MiniSom(x=self.NrSAAScenarioInPeriod[t], y=1, input_len=len(scaled_features[0]), sigma=1.0, learning_rate=0.5)
@@ -1465,6 +1477,9 @@ class SDDP(object):
                 selected_scenarios = selected_scenarios[:self.NrSAAScenarioInPeriod[t]]
             
             elif Constants.ScenarioReduction == "Hierarchical":
+                # Scale the features
+                scaler = StandardScaler()           
+                scaled_features = scaler.fit_transform(features)                
                 print("----- Applying -Hierarchical- For Scenario Reduction -----")
                 # Apply Hierarchical Clustering
                 hierarchical = AgglomerativeClustering(n_clusters=self.NrSAAScenarioInPeriod[t])
@@ -1475,6 +1490,9 @@ class SDDP(object):
                     selected_scenarios.append(cluster_indices[0])  # Pick the first scenario in each cluster
             
             elif Constants.ScenarioReduction == "Hierarchical_Diverse":
+                # Scale the features
+                scaler = StandardScaler()           
+                scaled_features = scaler.fit_transform(features)                   
                 print("----- Applying -Hierarchical (Diverse Selection)- For Scenario Reduction -----")
                 # Apply Hierarchical Clustering
                 hierarchical = AgglomerativeClustering(n_clusters=self.NrSAAScenarioInPeriod[t])
