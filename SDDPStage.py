@@ -5405,7 +5405,7 @@ class SDDPStage(object):
 
             # Sort scenarios by total demand in ascending order
             scenario_total_demands.sort(key=lambda x: x[1])
-
+            print("scenario_total_demands: ", scenario_total_demands)
             # Select bottom y% of scenarios
             num_lowest_scenarios = int(len(scenario_total_demands) * (percentage / 100.0))
             lowest_scenarios = scenario_total_demands[:num_lowest_scenarios]
@@ -5416,9 +5416,8 @@ class SDDPStage(object):
                 for j in self.Instance.InjuryLevelSet:
                     for c in self.Instance.BloodGPSet:
                         for l in self.Instance.DemandSet:
-                            scenario.Demands[t][j][c][l] = sum(self.SDDPOwner.SetOfSAAScenarioDemand[t][w][j][c][l] for w in selected_scenario_ids) \
-                                                            / len(selected_scenario_ids)
-
+                            scenario.Demands[t][j][c][l] = sum(self.SDDPOwner.SetOfSAAScenarioDemand[t][w][j][c][l] for w in self.SDDPOwner.SAAScenarioNrSetInPeriod[t]) \
+                                                            / len(self.SDDPOwner.SetOfSAAScenarioDemand[t])
             if Constants.Debug: print("Average Demands: ", scenario.Demands)
 
             ####################################################
@@ -5430,8 +5429,8 @@ class SDDPStage(object):
                 selected_scenarios = self.SDDPOwner.SAAScenarioNrSetInPeriod[t][:num_included_scenarios]
 
                 for h in self.Instance.HospitalSet:
-                    scenario.HospitalCaps[t][h] = sum(self.SDDPOwner.SetOfSAAScenarioHospitalCapacity[t][w][h] for w in selected_scenario_ids) \
-                                                    / len(selected_scenario_ids)
+                    scenario.HospitalCaps[t][h] = sum(self.SDDPOwner.SetOfSAAScenarioHospitalCapacity[t][w][h] for w in self.SDDPOwner.SAAScenarioNrSetInPeriod[t]) \
+                                                    / len(self.SDDPOwner.SetOfSAAScenarioHospitalCapacity[t])
 
             if Constants.Debug: print("Average HospitalCaps: ", scenario.HospitalCaps)
 
@@ -5444,8 +5443,8 @@ class SDDPStage(object):
 
                 for c in self.Instance.BloodGPSet:
                     for h in self.Instance.HospitalSet:
-                        scenario.WholeDonors[t][c][h] = sum(self.SDDPOwner.SetOfSAAScenarioWholeDonor[t][w][c][h] for w in selected_scenario_ids) \
-                                                        / len(selected_scenario_ids)
+                        scenario.WholeDonors[t][c][h] = sum(self.SDDPOwner.SetOfSAAScenarioWholeDonor[t][w][c][h] for w in self.SDDPOwner.SAAScenarioNrSetInPeriod[t]) \
+                                                        / len(self.SDDPOwner.SetOfSAAScenarioWholeDonor[t])
 
             if Constants.Debug: print("Average WholeDonors: ", scenario.WholeDonors)
 
@@ -5458,8 +5457,8 @@ class SDDPStage(object):
 
                 for c in self.Instance.BloodGPSet:
                     for u in self.Instance.FacilitySet:
-                        scenario.ApheresisDonors[t][c][u] = sum(self.SDDPOwner.SetOfSAAScenarioApheresisDonor[t][w][c][u] for w in selected_scenario_ids) \
-                                                            / len(selected_scenario_ids)
+                        scenario.ApheresisDonors[t][c][u] = sum(self.SDDPOwner.SetOfSAAScenarioApheresisDonor[t][w][c][u] for w in self.SDDPOwner.SAAScenarioNrSetInPeriod[t]) \
+                                                            / len(self.SDDPOwner.SetOfSAAScenarioApheresisDonor[t])
 
             if Constants.Debug:  print("Average ApheresisDonors: ", scenario.ApheresisDonors)
 

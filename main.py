@@ -90,8 +90,8 @@ def parseArguments():
 
     else:
         parser.add_argument("--Action", help="What do you want to do?", type=str, default="Solve", choices=["GenerateInstances", "Solve", "DebugLPFile"]) 
-        parser.add_argument("--Instance", help="Name of the instance.", type=str, default="2_5_5_5_3_4_1_CRP") 
-        parser.add_argument("--Model", help="Which Type of Model?", type=str, default="Multi_Stage", choices=["Average", "Two_Stage", "Multi_Stage", "HeuristicMulti_Stage"])
+        parser.add_argument("--Instance", help="Name of the instance.", type=str, default="2_5_5_5_3_4_100_CRP") 
+        parser.add_argument("--Model", help="Which Type of Model?", type=str, default="HeuristicMulti_Stage", choices=["Average", "Two_Stage", "Multi_Stage", "HeuristicMulti_Stage"])
         parser.add_argument("--NrScenario", help="The number of scenarios used for optimization (all10 ...)", type=str, default="all5")
         parser.add_argument("--ScenarioGeneration", help="Which Type of Sampling?", type=str, default="RQMC", choices=["MC", "QMC", "RQMC"])
         parser.add_argument("-m", "--method", help="Method used to solve?", type=str, default="SDDP", choices=["MIP", "NBD", "SDDP", "PH", "Hybrid", "MLLocalSearch"])
@@ -178,13 +178,13 @@ def parseArguments():
 def GenerateInstances():
     if Constants.Debug: print("\nWe are in the 'GenerateInstances' function")
 
-    for t in range(2, 5, 1):
-        for i in range(5, 21, 5):
+    for t in range(2, 3, 1):
+        for i in range(5, 6, 5):
             for h in range(5, 6, 5):
-                for l in range(5, 21, 5):
+                for l in range(5, 6, 5):
                     for m in range(3, 4, 1):
                         for c in range (4, 5, 4):
-                            for InstanceNumber in range (1, 6, 1):
+                            for InstanceNumber in range (100, 101, 1):
                                 if c not in (4, 8):
                                     raise ValueError("Invalid value for Blood GP. Blood group (c) should only be 4 or 8.")
 
