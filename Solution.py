@@ -323,6 +323,7 @@ class Solution(object):
             vehicleassignment_df.to_excel(writer, sheet_name='Vehicle Assignment')
 
             apheresisAssignments_df.to_excel(writer, sheet_name='Apheresis Assignments')
+            '''
             transshipmentHI_df.to_excel(writer, sheet_name='Transshipment HI')
             transshipmentII_df.to_excel(writer, sheet_name='Transshipment II')
             transshipmentHH_df.to_excel(writer, sheet_name='Transshipment HH')
@@ -335,9 +336,9 @@ class Solution(object):
             patientPostponement_df.to_excel(writer, sheet_name='Patient Postponement')
             plateletApheresisExtraction_df.to_excel(writer, sheet_name='Apheresis Extraction')
             plateletWholeExtraction_df.to_excel(writer, sheet_name='Whole Blood Extraction')
-
+            
             fixed_y_values_df.to_excel(writer, sheet_name='Fixed_y_value')
-
+            '''
             generaldf = self.GetGeneralInfoDf()
             generaldf.to_excel(writer, sheet_name="Generic")
 
@@ -1566,6 +1567,7 @@ class Solution(object):
             avgApheresisAssignments_df = pd.DataFrame(self.InSampleAverageApheresisAssignment)
             avgApheresisAssignments_df.to_excel(writer, sheet_name="Avg.ApheresisAssignment")
             
+            '''
             avgTransshipmentHI_df = pd.DataFrame(self.InSampleAverageTransshipmentHI)
             avgTransshipmentHI_df.to_excel(writer, sheet_name="Avg.Trans.HI")
             
@@ -1598,7 +1600,7 @@ class Solution(object):
 
             avgPlateletWholeExtraction_df = pd.DataFrame(self.InSampleAveragePlateletWholeExtraction)
             avgPlateletWholeExtraction_df.to_excel(writer, sheet_name="Avg.WholeExt.")
-
+            '''
             perscenario_demand_df = pd.DataFrame([self.InSampleTotalDemandPerScenario],
                                                 index=["Total Demand"],
                                                 columns=scenarioset)
@@ -1625,8 +1627,9 @@ class Solution(object):
 
             # Ensure the general data is in a 2D list format for DataFrame conversion
             general = [general]  # Wrapping general list in another list to make it 2D
+
             columnstab = ["Instance", "Model", "Method", "ScenarioGeneration", "NrScenario", "ScenarioSeed",
-                        "EVPI", "NrForwardScenario", "mipsetting", "SDDPSetting", "HybridPHSetting", "MLLocalSearchSetting",
+                        "EVPI", "NrForwardScenario", "mipsetting", "SDDPSetting", "HybridPHSetting", "MLLocalSearchSetting", "SamplingSeq.", "LBFPercentage", "ClusteringMethod", "InitNumScenCoeff",
                         "Average demand", "Average Transfer", "Average Infusion", "offsetseed", "nrevaluation", "solutionseed", "evaluationmethod"]
 
             generaldf = pd.DataFrame(general, columns=columnstab)

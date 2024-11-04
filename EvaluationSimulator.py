@@ -765,12 +765,12 @@ class EvaluationSimulator(object):
             if Constants.Debug: print("self.TestIdentificator.GetAsStringList():\n ", self.TestIdentificator.GetAsStringList())
             if Constants.Debug: print("self.EvalatorIdentificator.GetAsStringList():\n ", self.EvalatorIdentificator.GetAsStringList())
 
-            general = self.TestIdentificator.GetAsStringList() + self.EvalatorIdentificator.GetAsStringList() + [mean, variance2, covariance, LB, UB, MinAverage, MaxAverage, nrerror]
+            general = self.TestIdentificator.GetAsStringList() + self.EvalatorIdentificator.GetAsStringList() + [mean, variance_New, LB, UB, MinAverage, MaxAverage, nrerror]
 
             columnstab = ["Instance", "Model", "Method", "ScenarioGeneration", "NrScenario", "ScenarioSeed",  "EVPI", "NrForwardScenario", 
                           "mipsetting", "SDDPSetting", "HybridPHSetting", "MLLocalSearchSetting",
                            "Policy Generation", "NrEvaluation", "Time Horizon", "All Scenario",  
-                           "Mean", "Variance", "Covariance", "LB", "UB", "Min Average", "Max Average", "nrerror"]
+                           "Mean", "Variance", "LB", "UB", "Min Average", "Max Average", "nrerror"]
             #myfile = open(r'./Test/Bounds/TestResultOfEvaluated_%s_%r.csv' % (self.TestIdentificator.GetAsStringList(), self.EvalatorIdentificator.GetAsStringList()), 'w', newline='', encoding='utf-8')  # 'newline' to avoid extra newlines in Windows
             
             test_identificator_str = '_'.join(self.TestIdentificator.GetAsStringList())

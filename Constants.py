@@ -64,9 +64,9 @@ class Constants( object ):
 
     #Running option
     Debug = False
-    PrintSolutionFileToExcel = False            #If you set this 'True', then all final values of variables and objective function will be printed in Excel too.
-    PrintSolutionFileToPickle = True
-    PrintDetailsExcelFiles = False               #Here, you save some statistics which is useful for analytical part of the paper!
+    PrintSolutionFileToExcel = False            # (Defaul: False) If you set this 'True', then all final values of variables and objective function will be printed in Excel too.
+    PrintSolutionFileToPickle = True            # (Defaul: True)
+    PrintDetailsExcelFiles = False               # (Defaul: False) Here, you save some statistics which is useful for analytical part of the paper!
     PrintOnlyFirstStageDecision = True
     RunEvaluationInSeparatedJob = False
     PrintScenarios = True
@@ -82,11 +82,11 @@ class Constants( object ):
     RQMCAggregate = False
 
     #Nested Benders Decomposition
-    NestedBenders = False           #Do not Change, It gets value in the code!
+    NestedBenders = False                           #Do not Change, It gets value in the code!
     #SDDPparameters
-    AlgorithmOptimalityTolerence = 0.0005        #It is not Active Now! 
-    AlgorithmOptimalityTolerenceTest = 0.001     # it is used for Convergency test based on in-sample scenarios
-    SDDPIterationLimit = 500                    #It is not active now!
+    AlgorithmOptimalityTolerence = 0.0005           #It is not Active Now! 
+    AlgorithmOptimalityTolerenceTest = 0.001        # it is used for Convergency test based on in-sample scenarios
+    SDDPIterationLimit = 500                        #It is not active now!
     SDDPPrintDebugLPFiles = False
     PrintSDDPTrace = True
     SDDPRunSingleTree = False
@@ -154,6 +154,10 @@ class Constants( object ):
     ################ Scenario Reduction in SDDP
     ScenarioReduction = "SOM"      # Do Not Change! (You have to modify it in the main.py file)
     Coeeff_Init_Scen_bef_reduction = 10     # Do Not Change! (You have to modify it in the main.py file)    # Whatever you set here and based on "allY", then, first the model generate "Coeeff_Init_Scen_bef_reduction * Y" scenarios, and based on KNN, finally choose Y of them!
+    
+
+    ############### Generating Data for Case Study
+    Case_Study_Data_Generation = False           # If its true, then the data will be generated for the Case Study
 
     @staticmethod
     def IsDeterministic(s):

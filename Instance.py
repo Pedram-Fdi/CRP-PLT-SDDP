@@ -6,8 +6,11 @@ import random
 import math
 import numpy as np
 import pickle
+import googlemaps
+
 
 class Instance(object):
+
 
     # Constructor
     def __init__(self, instanceName):
@@ -53,7 +56,7 @@ class Instance(object):
         self.Do_you_want_Random_Initial_Platelet_Inventory = 1
         self.Do_you_want_Dependent_Hospital_Capacities_based_on_Demands = 1
         self.Safety_Factor_Initital_Platelet = 1
-        self.Safety_Factor_Rescue_Vehicle_ACF = 5           #For having 0 Shortage (For demand between [50,200], its defaul is on 3)
+        self.Safety_Factor_Rescue_Vehicle_ACF = 2           # (Default for non-case: 5) For having 0 Shortage (For demand between [50,200], its defaul is on 3)
         self.Safety_Factor_Rescue_Vehicle_Hospital = 2.5      #For having 0 Shortage (For demand between [50,200], its defaul is on 1.5)
         self.Rquired_Time_For_One_Apheresis_collection = 90   # In Minutes        
         
@@ -674,7 +677,846 @@ class Instance(object):
         self.Print_Attributes()
             
         if Constants.Debug:  print("-------------")
-  
+
+    def Generate_Data_CaseStudy(self, seed=None):
+        excel_file_path = r'C:\PhD\Thesis\Papers\2nd\Case Data\Van\Van_Data.xlsx'  # The path to your Excel file
+        if Constants.Debug: print("\n We are in 'Instance' Class -- Generate_Data_CaseStudy")
+
+        if seed is not None:
+            random.seed(seed)
+        
+        ################################## Generate G_c
+        # In this matrix, if G_c[c][cprime]==1, it means c can be substituted by cprime!
+        self.G_c = np.zeros((len(self.BloodGPSet), len(self.BloodGPSet)))
+        if len(self.BloodGPSet) == 8:
+            for c in self.BloodGPSet:
+                if c <= 3: # Positive blood groups can be substituted by any other blood groups
+                    for cPrime in self.BloodGPSet:
+                        self.G_c[c][cPrime] = 1
+                else:
+                    for cPrime in self.BloodGPSet:
+                        if cPrime > 3:
+                            self.G_c[c][cPrime] = 1
+        else:
+            for c in self.BloodGPSet:
+                for cPrime in self.BloodGPSet:
+                    self.G_c[c][cPrime] = 1
+          
+        ################################## Generate J_u
+        self.J_u = np.zeros((len(self.FacilitySet), len(self.InjuryLevelSet)))
+        for u in self.FacilitySet:
+            if u < self.NrHospitals:
+                for j in self.InjuryLevelSet:
+                    self.J_u[u][j] = 1
+            else:
+                for j in self.InjuryLevelSet:
+                    if j != 0:
+                        self.J_u[u][j] = 1
+
+        ################################## Generate J_r
+        self.J_r = np.zeros((len(self.InjuryLevelSet), len(self.PlateletAgeSet)))
+        for j in self.InjuryLevelSet:
+            if(j==0):       # High-Priority
+                self.J_r[j][0] = 1
+            elif (j==1):    # Medium-Priority
+                self.J_r[j][0] = 1
+                self.J_r[j][1] = 1
+                self.J_r[j][2] = 1    
+            elif(j==2):     # Low-Priority    
+                self.J_r[j][0] = 1
+                self.J_r[j][1] = 1
+                self.J_r[j][2] = 1 
+                self.J_r[j][3] = 1 
+                self.J_r[j][4] = 1 
+
+        ################################## Generate R_j
+        self.R_j = np.zeros((len(self.PlateletAgeSet), len(self.InjuryLevelSet)))
+        for r in self.PlateletAgeSet:
+            for j in self.InjuryLevelSet:
+                if(j==0):       # High-Priority
+                    self.R_j[0][j] = 1
+                elif (j==1):    # Medium-Priority
+                    self.R_j[0][j] = 1
+                    self.R_j[1][j] = 1
+                    self.R_j[2][j] = 1    
+                elif(j==2):     # Low-Priority                        
+                    self.R_j[0][j] = 1
+                    self.R_j[1][j] = 1
+                    self.R_j[2][j] = 1
+                    self.R_j[3][j] = 1
+                    self.R_j[4][j] = 1
+
+        ################################## Generate nr.Platelet Extraction by Apheresis
+        self.Platelet_Units_Apheresis = 8               # The number of units of platelets extracted from one person by Apheresis machine*/
+
+        ################################## Generate ACF Bed Capacities
+        sheet_name = 'TMCs_31'  # The sheet containing the ACF data
+        # Read the Excel file
+        df_acfs = pd.read_excel(excel_file_path, sheet_name=sheet_name)
+
+        # Read the Excel file
+        df_acfs = pd.read_excel(excel_file_path, sheet_name=sheet_name, header=None)  # Set header=None if the file has no headers
+
+        # If your file doesn't have column headers, reference columns by index:
+        acf_numbers = df_acfs.iloc[1:32, 0].values  # ACF numbers (from column A, index 0)
+        acf_capacities = df_acfs.iloc[1:32, 3].values  # ACF capacities (from column D, index 3)
+
+        # Assign capacities based on extracted data
+        for i, capacity in enumerate(acf_capacities):
+            self.ACF_Bed_Capacity.append(capacity)
+        print("ACF_Bed_Capacity: ", self.ACF_Bed_Capacity)
+
+        ################################## Generate Fixed Costs ACF based on ACF Bed Capacities
+        for i in self.ACFPPointSet:
+            New_Fixed_Cost_ACF = self.ACF_Bed_Capacity[i] * self.m2_Required_for_Each_Patient * self.Cost_of_Each_m2 * 0.00001
+            New_Fixed_Cost_ACF = math.floor(1000 * New_Fixed_Cost_ACF) / 1000
+            #self.Fixed_Cost_ACF.append(New_Fixed_Cost_ACF)     #if you wanna consider the cost of ACF openning in the obj function, uncomment this and comment next line.
+            self.Fixed_Cost_ACF.append(New_Fixed_Cost_ACF)
+        
+        ################################## Generate Fixed Costs ACF based on ACF Bed Capacities
+        for i in self.ACFPPointSet:
+            New_Fixed_Cost_ACF_Constraint = self.ACF_Bed_Capacity[i] * self.m2_Required_for_Each_Patient * self.Cost_of_Each_m2
+            New_Fixed_Cost_ACF_Constraint = math.floor(1000 * New_Fixed_Cost_ACF_Constraint) / 1000
+            self.Fixed_Cost_ACF_Constraint.append(New_Fixed_Cost_ACF_Constraint)
+
+        ################################## Generate Available Budget for ACFs
+        Total_Required_Budget_for_ACF_Establishment = 0
+        for i in self.ACFPPointSet:
+            Total_Required_Budget_for_ACF_Establishment += self.Fixed_Cost_ACF_Constraint[i]
+        Total_Required_Budget_for_ACF_Establishment = ((Total_Required_Budget_for_ACF_Establishment * 10) / 20)
+        Max_Required_Budget_for_ACF_Establishment = max(self.Fixed_Cost_ACF_Constraint)
+        print("Total_Required_Budget_for_ACF_Establishment: ", Total_Required_Budget_for_ACF_Establishment)
+        print("Max_Required_Budget_for_ACF_Establishment: ", Max_Required_Budget_for_ACF_Establishment)
+        
+        self.Total_Budget_ACF_Establishment = max(Total_Required_Budget_for_ACF_Establishment, Max_Required_Budget_for_ACF_Establishment)   # The total available budget to establish ACFs*/
+        
+
+        ################################## Generate Platelet_Wastage_Cost       
+        for u in self.FacilitySet:  # Start from 1 to skip the first element as in C++
+            New_Platelet_Wastage_Cost = random.uniform(self.Min_Platelet_Wastage_Cost, self.Max_Platelet_Wastage_Cost)
+            New_Platelet_Wastage_Cost = math.floor(1000 * New_Platelet_Wastage_Cost) / 1000
+            self.Platelet_Wastage_Cost.append(New_Platelet_Wastage_Cost)
+        
+        ################################## Generate Platelet_Inventory_Cost       
+        for u in self.FacilitySet:  # Start from 1 to skip the first element as in C++
+            New_Platelet_Inventory_Cost = random.uniform(self.Min_Platelet_Inventory_Cost, self.Max_Platelet_Inventory_Cost)
+            New_Platelet_Inventory_Cost = math.floor(1000 * New_Platelet_Inventory_Cost) / 1000
+            self.Platelet_Inventory_Cost.append(New_Platelet_Inventory_Cost)
+
+        ################################## Generate VehicleAssignment_Cost       
+        for m in self.RescueVehicleSet:  # Start from 1 to skip the first element as in C++
+            New_VehicleAssignment_Cost = random.uniform(self.Min_VehicleAssignment_Cost, self.Max_VehicleAssignment_Cost)
+            New_VehicleAssignment_Cost = math.floor(1000 * New_VehicleAssignment_Cost) / 1000
+            self.VehicleAssignment_Cost.append(New_VehicleAssignment_Cost)
+
+        ################################## Generate ApheresisMachineAssignment_Cost       
+        for i in self.ACFPPointSet:  # Start from 1 to skip the first element as in C++
+            New_ApheresisMachineAssignment_Cost = random.uniform(self.Min_ApheresisMachineAssignment_Cost, self.Max_ApheresisMachineAssignment_Cost)
+            New_ApheresisMachineAssignment_Cost = math.floor(1000 * New_ApheresisMachineAssignment_Cost) / 1000
+            self.ApheresisMachineAssignment_Cost.append(New_ApheresisMachineAssignment_Cost) 
+
+        ################################## Generate ApheresisExtraction_Cost       
+        for u in self.FacilitySet:  # Start from 1 to skip the first element as in C++
+            New_ApheresisExtraction_Cost = random.uniform(self.Min_ApheresisExtraction_Cost, self.Max_ApheresisExtraction_Cost)
+            New_ApheresisExtraction_Cost = math.floor(1000 * New_ApheresisExtraction_Cost) / 1000
+            self.ApheresisExtraction_Cost.append(New_ApheresisExtraction_Cost)
+
+        ################################## Generate WholeExtraction_Cost       
+        for h in self.HospitalSet:  # Start from 1 to skip the first element as in C++
+            New_WholeExtraction_Cost = random.uniform(self.Min_WholeExtraction_Cost, self.Max_WholeExtraction_Cost)
+            New_WholeExtraction_Cost = math.floor(1000 * New_WholeExtraction_Cost) / 1000
+            self.WholeExtraction_Cost.append(New_WholeExtraction_Cost)
+
+        ################################## Generate Platelet_Units_Required_for_Injury from reference: "Analysis of the Blood Consumption for Surgical Programs"
+        for j in self.InjuryLevelSet:
+            if j==0:
+               New_Platelet_Units_Required_for_Injury = 3
+            elif j==1:
+                New_Platelet_Units_Required_for_Injury = 2
+            else:
+                New_Platelet_Units_Required_for_Injury = 1
+            
+            self.Platelet_Units_Required_for_Injury.append(New_Platelet_Units_Required_for_Injury)
+        
+        ################################## Generate Postponing_Cost_Surgery
+        for j in self.InjuryLevelSet:
+            if j==0:
+               New_Postponing_Cost_Surgery = self.High_Priority_Postponement_Cost
+            elif j==1:
+                New_Postponing_Cost_Surgery = (self.High_Priority_Postponement_Cost/2)
+            else:
+                New_Postponing_Cost_Surgery = (self.High_Priority_Postponement_Cost/3)
+            
+            self.Postponing_Cost_Surgery.append(New_Postponing_Cost_Surgery * 2)
+
+        ################################## Generate Total_Apheresis_Machine_ACF
+        # There are more than 70 Apheresis machines are in Turkey, which we assume that only 10 of them can be distributed nation-wide.
+        for t in self.TimeBucketSet:
+            New_Total_Apheresis_Machine_ACF = random.randint(10, 10)
+            self.Total_Apheresis_Machine_ACF.append(New_Total_Apheresis_Machine_ACF)
+
+        ################################## Define blood group headers for rows (Donors) and columns (Recipients)
+        if len(self.BloodGPSet) == 8:
+            blood_groups = ["O+", "A+", "B+", "AB+", "O-", "A-", "B-", "AB-"]
+        else:
+            blood_groups = ["O", "A", "B", "AB"]
+
+        # Generate Substitution Weight Matrix
+        if len(self.BloodGPSet) == 4:
+            self.Substitution_Weight = [
+                [0, 15, 15, 30],  # O is more flexible as a donor, so lower penalties
+                [10, 0, 20, 30],  # A to B is a bit less flexible
+                [20, 20, 0, 10],  # B to A is similar, with some flexibility to AB
+                [30, 15, 15, 0]]  # AB, being the universal recipient, has the highest penalties for substitution
+        else:
+            self.Substitution_Weight = [
+                [0, 30, 30, 30, 20, 35, 35, 35],
+                [10, 0, 20, 20, 25, 20, 30, 30],
+                [20, 20, 0, 10, 30, 30, 20, 25],
+                [30, 10, 10, 0, 35, 25, 25, 20],
+                [5, 35, 35, 35, 0, 15, 15, 15],
+                [15, 5, 25, 25, 5, 0, 10, 10],
+                [25, 25, 5, 15, 10, 10, 0, 5],
+                [35, 15, 15, 5, 15, 5, 5, 0]]   
+                     
+        self.Substitution_Weight = [[element * 5 for element in row] for row in self.Substitution_Weight]
+        
+        ##################################  Calculating Forecasted Average Demand
+        if self.NrDemandLocations == 94:
+            sheet_name = 'Demands_94'
+
+            # Read the total average demands from the Excel file (assuming demands are in column D, cells D2:D95)
+            df_demand = pd.read_excel(excel_file_path, sheet_name=sheet_name, header=None)
+            total_average_demands = df_demand.iloc[1:95, 3].values  # Reading demands from D2 to D95 (0-indexed)
+
+            # Initialize ForecastedAverageDemand array
+            self.ForecastedAverageDemand = np.zeros((len(self.TimeBucketSet), len(self.InjuryLevelSet), len(self.BloodGPSet), len(self.DemandSet)))
+
+            # Define a demand distribution factor to assign more demands to the earlier periods
+            # Example: 50% of total demand is allocated to the first half of the periods, and 50% to the second half
+            period_distribution_factors = np.linspace(0.7, 0.3, len(self.TimeBucketSet))  # This linearly decreases demand across periods
+            period_distribution_factors /= period_distribution_factors.sum()  # Normalize to ensure the sum is 1.0
+
+            # Iterate over each demand location
+            for l, total_location_demand in enumerate(total_average_demands):
+                
+                # Normalize the total demand per location to be distributed across periods, injury types, and blood groups
+                total_demand_allocated = 0
+                
+                # Distribute demand across time periods (more demand in earlier periods)
+                for t, period_factor in enumerate(period_distribution_factors):
+                    
+                    # Calculate demand for the current time period
+                    period_demand = total_location_demand * period_factor
+                    
+                    # Distribute this period's demand across injury levels
+                    for j in self.InjuryLevelSet:
+                        demand_for_injury_level = period_demand * self.Priority_Patient_Percent[j]
+                        
+                        # Distribute demand across blood groups
+                        for c, bg in enumerate(blood_groups):
+                            if len(self.BloodGPSet) == 8:
+                                demand_for_bg = demand_for_injury_level * self.blood_group_percentages_8[bg]
+                            else:
+                                demand_for_bg = demand_for_injury_level * self.blood_group_percentages_4[bg]
+                            
+                            # Assign the calculated demand to the forecasted demand matrix and ensure it's rounded up
+                            self.ForecastedAverageDemand[t][j][c][l] = round(demand_for_bg)
+                            total_demand_allocated += self.ForecastedAverageDemand[t][j][c][l]
+
+                # Ensure the total demand allocated is equal to the total location demand from the Excel file
+                scaling_factor = total_location_demand / total_demand_allocated if total_demand_allocated > 0 else 0
+                
+                # Scale the demands to match the total demand from the Excel file and ensure integer values
+                for t in self.TimeBucketSet:
+                    for j in self.InjuryLevelSet:
+                        for c in range(len(self.BloodGPSet)):
+                            self.ForecastedAverageDemand[t][j][c][l] = math.ceil(self.ForecastedAverageDemand[t][j][c][l] * scaling_factor)
+        elif self.NrDemandLocations == 60:
+            sheet_name = 'Demands_60'
+
+            # Read the total average demands from the Excel file (assuming demands are in column D, cells D2:D95)
+            df_demand = pd.read_excel(excel_file_path, sheet_name=sheet_name, header=None)
+            total_average_demands = df_demand.iloc[1:61, 4].values  # Reading demands from D2 to D95 (0-indexed)
+
+            # Initialize ForecastedAverageDemand array
+            self.ForecastedAverageDemand = np.zeros((len(self.TimeBucketSet), len(self.InjuryLevelSet), len(self.BloodGPSet), len(self.DemandSet)))
+
+            # Define a demand distribution factor to assign more demands to the earlier periods
+            # Example: 50% of total demand is allocated to the first half of the periods, and 50% to the second half
+            period_distribution_factors = np.linspace(0.7, 0.3, len(self.TimeBucketSet))  # This linearly decreases demand across periods
+            period_distribution_factors /= period_distribution_factors.sum()  # Normalize to ensure the sum is 1.0
+
+            # Iterate over each demand location
+            for l, total_location_demand in enumerate(total_average_demands):
+                
+                # Normalize the total demand per location to be distributed across periods, injury types, and blood groups
+                total_demand_allocated = 0
+                
+                # Distribute demand across time periods (more demand in earlier periods)
+                for t, period_factor in enumerate(period_distribution_factors):
+                    
+                    # Calculate demand for the current time period
+                    period_demand = total_location_demand * period_factor
+                    
+                    # Distribute this period's demand across injury levels
+                    for j in self.InjuryLevelSet:
+                        demand_for_injury_level = period_demand * self.Priority_Patient_Percent[j]
+                        
+                        # Distribute demand across blood groups
+                        for c, bg in enumerate(blood_groups):
+                            if len(self.BloodGPSet) == 8:
+                                demand_for_bg = demand_for_injury_level * self.blood_group_percentages_8[bg]
+                            else:
+                                demand_for_bg = demand_for_injury_level * self.blood_group_percentages_4[bg]
+                            
+                            # Assign the calculated demand to the forecasted demand matrix and ensure it's rounded up
+                            self.ForecastedAverageDemand[t][j][c][l] = round(demand_for_bg)
+                            total_demand_allocated += self.ForecastedAverageDemand[t][j][c][l]
+
+                # Ensure the total demand allocated is equal to the total location demand from the Excel file
+                scaling_factor = total_location_demand / total_demand_allocated if total_demand_allocated > 0 else 0
+                
+                # Scale the demands to match the total demand from the Excel file and ensure integer values
+                for t in self.TimeBucketSet:
+                    for j in self.InjuryLevelSet:
+                        for c in range(len(self.BloodGPSet)):
+                            self.ForecastedAverageDemand[t][j][c][l] = math.ceil(self.ForecastedAverageDemand[t][j][c][l] * scaling_factor)
+        elif self.NrDemandLocations == 30:
+            sheet_name = 'Demands_30'
+
+            # Read the total average demands from the Excel file (assuming demands are in column D, cells D2:D95)
+            df_demand = pd.read_excel(excel_file_path, sheet_name=sheet_name, header=None)
+            total_average_demands = df_demand.iloc[1:31, 3].values  # Reading demands from D2 to D95 (0-indexed)
+
+            # Initialize ForecastedAverageDemand array
+            self.ForecastedAverageDemand = np.zeros((len(self.TimeBucketSet), len(self.InjuryLevelSet), len(self.BloodGPSet), len(self.DemandSet)))
+
+            # Define a demand distribution factor to assign more demands to the earlier periods
+            # Example: 50% of total demand is allocated to the first half of the periods, and 50% to the second half
+            period_distribution_factors = np.linspace(0.7, 0.3, len(self.TimeBucketSet))  # This linearly decreases demand across periods
+            period_distribution_factors /= period_distribution_factors.sum()  # Normalize to ensure the sum is 1.0
+
+            # Iterate over each demand location
+            for l, total_location_demand in enumerate(total_average_demands):
+                
+                # Normalize the total demand per location to be distributed across periods, injury types, and blood groups
+                total_demand_allocated = 0
+                
+                # Distribute demand across time periods (more demand in earlier periods)
+                for t, period_factor in enumerate(period_distribution_factors):
+                    
+                    # Calculate demand for the current time period
+                    period_demand = total_location_demand * period_factor
+                    
+                    # Distribute this period's demand across injury levels
+                    for j in self.InjuryLevelSet:
+                        demand_for_injury_level = period_demand * self.Priority_Patient_Percent[j]
+                        
+                        # Distribute demand across blood groups
+                        for c, bg in enumerate(blood_groups):
+                            if len(self.BloodGPSet) == 8:
+                                demand_for_bg = demand_for_injury_level * self.blood_group_percentages_8[bg]
+                            else:
+                                demand_for_bg = demand_for_injury_level * self.blood_group_percentages_4[bg]
+                            
+                            # Assign the calculated demand to the forecasted demand matrix and ensure it's rounded up
+                            self.ForecastedAverageDemand[t][j][c][l] = round(demand_for_bg)
+                            total_demand_allocated += self.ForecastedAverageDemand[t][j][c][l]
+
+                # Ensure the total demand allocated is equal to the total location demand from the Excel file
+                scaling_factor = total_location_demand / total_demand_allocated if total_demand_allocated > 0 else 0
+                
+                # Scale the demands to match the total demand from the Excel file and ensure integer values
+                for t in self.TimeBucketSet:
+                    for j in self.InjuryLevelSet:
+                        for c in range(len(self.BloodGPSet)):
+                            self.ForecastedAverageDemand[t][j][c][l] = round(self.ForecastedAverageDemand[t][j][c][l] * scaling_factor)
+        # Sum all the elements in the ForecastedAverageDemand array to get the total demand
+        total_demand = np.sum(self.ForecastedAverageDemand) 
+        # Print the total demand and the demand array
+
+        ##################################  Calculating Forecasted Average Standard Deviation Demand
+        if self.NrDemandLocations == 94:
+            sheet_name = 'Demands_94'
+
+            # Read the Max and Min demands from the Excel file (assuming Max in F2:F95 and Min in G2:G95)
+            df_demand = pd.read_excel(excel_file_path, sheet_name=sheet_name, header=None)
+            max_demands = df_demand.iloc[1:95, 6].values  # Reading max demands from F2 to F95 (0-indexed)
+            min_demands = df_demand.iloc[1:95, 5].values  # Reading min demands from G2 to G95 (0-indexed)
+
+            # Initialize ForecastedStandardDeviationDemand array
+            self.ForecastedStandardDeviationDemand = np.zeros((len(self.TimeBucketSet), len(self.InjuryLevelSet), len(self.BloodGPSet), len(self.DemandSet)))
+
+            # Define a demand distribution factor for standard deviation, same as we did for average demand
+            period_distribution_factors = np.linspace(0.7, 0.3, len(self.TimeBucketSet))  # This linearly decreases demand across periods
+            period_distribution_factors /= period_distribution_factors.sum()  # Normalize to ensure the sum is 1.0
+
+            # Iterate over each demand location
+            for l, (max_demand, min_demand) in enumerate(zip(max_demands, min_demands)):
+                
+                # Calculate the total standard deviation demand for each location
+                total_STD_demand = (max_demand - min_demand) / 2  # This gives the STD for each location
+
+                total_std_demand_allocated = 0  # To track the sum of allocated demand
+                
+                # Distribute standard deviation across time periods (more STD in earlier periods)
+                for t, period_factor in enumerate(period_distribution_factors):
+                    
+                    # Calculate the STD for the current time period
+                    period_std_demand = total_STD_demand * period_factor
+                    
+                    # Distribute this period's STD across injury levels
+                    for j in self.InjuryLevelSet:
+                        std_demand_for_injury_level = period_std_demand * self.Priority_Patient_Percent[j]
+                        
+                        # Distribute STD across blood groups
+                        for c, bg in enumerate(blood_groups):
+                            if len(self.BloodGPSet) == 8:
+                                std_demand_for_bg = std_demand_for_injury_level * self.blood_group_percentages_8[bg]
+                            else:
+                                std_demand_for_bg = std_demand_for_injury_level * self.blood_group_percentages_4[bg]
+                            
+                            # Assign the calculated STD demand to the forecasted STD demand matrix and round
+                            self.ForecastedStandardDeviationDemand[t][j][c][l] = round(std_demand_for_bg)
+                            total_std_demand_allocated += self.ForecastedStandardDeviationDemand[t][j][c][l]
+
+                # Ensure the total STD demand allocated is equal to the calculated total_STD_demand
+                scaling_factor = total_STD_demand / total_std_demand_allocated if total_std_demand_allocated > 0 else 0
+                
+                # Scale the STD demands to match the total demand and ensure integer values
+                for t in self.TimeBucketSet:
+                    for j in self.InjuryLevelSet:
+                        for c in range(len(self.BloodGPSet)):
+                            self.ForecastedStandardDeviationDemand[t][j][c][l] = math.ceil(self.ForecastedStandardDeviationDemand[t][j][c][l] * scaling_factor)
+        if self.NrDemandLocations == 60:
+            sheet_name = 'Demands_60'
+
+            # Read the Max and Min demands from the Excel file (assuming Max in F2:F95 and Min in G2:G95)
+            df_demand = pd.read_excel(excel_file_path, sheet_name=sheet_name, header=None)
+            max_demands = df_demand.iloc[1:61, 7].values  # Reading max demands from F2 to F95 (0-indexed)
+            min_demands = df_demand.iloc[1:61, 6].values  # Reading min demands from G2 to G95 (0-indexed)
+
+            # Initialize ForecastedStandardDeviationDemand array
+            self.ForecastedStandardDeviationDemand = np.zeros((len(self.TimeBucketSet), len(self.InjuryLevelSet), len(self.BloodGPSet), len(self.DemandSet)))
+
+            # Define a demand distribution factor for standard deviation, same as we did for average demand
+            period_distribution_factors = np.linspace(0.7, 0.3, len(self.TimeBucketSet))  # This linearly decreases demand across periods
+            period_distribution_factors /= period_distribution_factors.sum()  # Normalize to ensure the sum is 1.0
+
+            # Iterate over each demand location
+            for l, (max_demand, min_demand) in enumerate(zip(max_demands, min_demands)):
+                
+                # Calculate the total standard deviation demand for each location
+                total_STD_demand = (max_demand - min_demand) / 2  # This gives the STD for each location
+
+                total_std_demand_allocated = 0  # To track the sum of allocated demand
+                
+                # Distribute standard deviation across time periods (more STD in earlier periods)
+                for t, period_factor in enumerate(period_distribution_factors):
+                    
+                    # Calculate the STD for the current time period
+                    period_std_demand = total_STD_demand * period_factor
+                    
+                    # Distribute this period's STD across injury levels
+                    for j in self.InjuryLevelSet:
+                        std_demand_for_injury_level = period_std_demand * self.Priority_Patient_Percent[j]
+                        
+                        # Distribute STD across blood groups
+                        for c, bg in enumerate(blood_groups):
+                            if len(self.BloodGPSet) == 8:
+                                std_demand_for_bg = std_demand_for_injury_level * self.blood_group_percentages_8[bg]
+                            else:
+                                std_demand_for_bg = std_demand_for_injury_level * self.blood_group_percentages_4[bg]
+                            
+                            # Assign the calculated STD demand to the forecasted STD demand matrix and round
+                            self.ForecastedStandardDeviationDemand[t][j][c][l] = round(std_demand_for_bg)
+                            total_std_demand_allocated += self.ForecastedStandardDeviationDemand[t][j][c][l]
+
+                # Ensure the total STD demand allocated is equal to the calculated total_STD_demand
+                scaling_factor = total_STD_demand / total_std_demand_allocated if total_std_demand_allocated > 0 else 0
+                
+                # Scale the STD demands to match the total demand and ensure integer values
+                for t in self.TimeBucketSet:
+                    for j in self.InjuryLevelSet:
+                        for c in range(len(self.BloodGPSet)):
+                            self.ForecastedStandardDeviationDemand[t][j][c][l] = math.ceil(self.ForecastedStandardDeviationDemand[t][j][c][l] * scaling_factor)
+        if self.NrDemandLocations == 30:
+            sheet_name = 'Demands_30'
+
+            # Read the Max and Min demands from the Excel file (assuming Max in F2:F95 and Min in G2:G95)
+            df_demand = pd.read_excel(excel_file_path, sheet_name=sheet_name, header=None)
+            max_demands = df_demand.iloc[1:31, 6].values  # Reading max demands from F2 to F95 (0-indexed)
+            min_demands = df_demand.iloc[1:31, 5].values  # Reading min demands from G2 to G95 (0-indexed)
+
+            # Initialize ForecastedStandardDeviationDemand array
+            self.ForecastedStandardDeviationDemand = np.zeros((len(self.TimeBucketSet), len(self.InjuryLevelSet), len(self.BloodGPSet), len(self.DemandSet)))
+
+            # Define a demand distribution factor for standard deviation, same as we did for average demand
+            period_distribution_factors = np.linspace(0.7, 0.3, len(self.TimeBucketSet))  # This linearly decreases demand across periods
+            period_distribution_factors /= period_distribution_factors.sum()  # Normalize to ensure the sum is 1.0
+
+            # Iterate over each demand location
+            for l, (max_demand, min_demand) in enumerate(zip(max_demands, min_demands)):
+                
+                # Calculate the total standard deviation demand for each location
+                total_STD_demand = (max_demand - min_demand) / 2  # This gives the STD for each location
+
+                total_std_demand_allocated = 0  # To track the sum of allocated demand
+                
+                # Distribute standard deviation across time periods (more STD in earlier periods)
+                for t, period_factor in enumerate(period_distribution_factors):
+                    
+                    # Calculate the STD for the current time period
+                    period_std_demand = total_STD_demand * period_factor
+                    
+                    # Distribute this period's STD across injury levels
+                    for j in self.InjuryLevelSet:
+                        std_demand_for_injury_level = period_std_demand * self.Priority_Patient_Percent[j]
+                        
+                        # Distribute STD across blood groups
+                        for c, bg in enumerate(blood_groups):
+                            if len(self.BloodGPSet) == 8:
+                                std_demand_for_bg = std_demand_for_injury_level * self.blood_group_percentages_8[bg]
+                            else:
+                                std_demand_for_bg = std_demand_for_injury_level * self.blood_group_percentages_4[bg]
+                            
+                            # Assign the calculated STD demand to the forecasted STD demand matrix and round
+                            self.ForecastedStandardDeviationDemand[t][j][c][l] = round(std_demand_for_bg)
+                            total_std_demand_allocated += self.ForecastedStandardDeviationDemand[t][j][c][l]
+
+                # Ensure the total STD demand allocated is equal to the calculated total_STD_demand
+                scaling_factor = total_STD_demand / total_std_demand_allocated if total_std_demand_allocated > 0 else 0
+                
+                # Scale the STD demands to match the total demand and ensure integer values
+                for t in self.TimeBucketSet:
+                    for j in self.InjuryLevelSet:
+                        for c in range(len(self.BloodGPSet)):
+                            self.ForecastedStandardDeviationDemand[t][j][c][l] = math.ceil(self.ForecastedStandardDeviationDemand[t][j][c][l] * scaling_factor)
+        # Sum all the elements in the ForecastedStandardDeviationDemand array to get the total STD demand
+        total_std_demand = np.sum(self.ForecastedStandardDeviationDemand)
+
+        ################################## Generate the initial inventory structure
+        self.Initial_Platelet_Inventory = np.zeros((len(self.BloodGPSet), len(self.PlateletAgeSet), len(self.HospitalSet)))
+        
+        if (self.Do_you_want_Random_Initial_Platelet_Inventory == 1):
+            
+            for c in self.BloodGPSet:
+                for r in self.PlateletAgeSet:
+                    for h in self.HospitalSet:
+                        Initial_Inventory = random.randint(self.Min_Initial_Platelet_Inventory, self.Max_Initial_Platelet_Inventory)
+                        self.Initial_Platelet_Inventory[c][r][h] = Initial_Inventory
+        else:
+            # Calculate initial inventory for the first time period (t=0) based on forecasted average demand
+            for c, bg in enumerate(self.BloodGPSet):
+                for r in self.PlateletAgeSet:
+                    for h in self.HospitalSet:
+                        if h < self.NrHospitals:
+                            # Sum forecasted demand for the first time period across all demand locations and injury levels
+                            sum_forecasted_demand = sum(self.ForecastedAverageDemand[0, :, c, :].flatten())
+                            # Apply safety factor only for the high-priority demand in the first age category at hospital facilities
+                            if r == 1:
+                                initial_inventory = round(sum_forecasted_demand * self.Safety_Factor_Initital_Platelet / self.NrHospitals)
+                            else:
+                                initial_inventory = round(sum_forecasted_demand / (self.NrHospitals + 3))  # Assume 3 ACFs for medium and low priority
+                        else:
+                            # ACF facilities: apply a different division factor if needed
+                            sum_forecasted_demand = sum(self.ForecastedAverageDemand[0, :, c, :].flatten())
+                            initial_inventory = round(sum_forecasted_demand * self.Safety_Factor_Initital_Platelet / 4)  # Assume 4 ACFs
+                        # Set the initial inventory
+                        self.Initial_Platelet_Inventory[c][r][h] = round(initial_inventory)
+
+        ##################################  Calculating Average Hospital Bed Capacity
+        sheet_name = 'Hospitals'  # The sheet containing hospital capacities
+        # Read hospital capacities from the Excel file (cells D5 to D8)
+        df_hospitals = pd.read_excel(excel_file_path, sheet_name=sheet_name, header=None)
+        hospital_capacities = df_hospitals.iloc[4:8, 3].values  # Reading capacities from D5 to D8 (0-indexed)
+        # Initialize ForecastedAverageHospital_Bed_Capacity array
+        self.ForecastedAverageHospital_Bed_Capacity = np.zeros((len(self.TimeBucketSet), len(self.HospitalSet)))
+        for t in self.TimeBucketSet:
+            for h in self.HospitalSet:
+                # Generate bed capacities from the Excel file for the first time period (t==0)
+                if t == 0:
+                    # Assign hospital capacities from the Excel sheet
+                    self.ForecastedAverageHospital_Bed_Capacity[t][h] = hospital_capacities[h]
+                else:
+                    # Keep the capacities fixed after the first period
+                    self.ForecastedAverageHospital_Bed_Capacity[t][h] = self.ForecastedAverageHospital_Bed_Capacity[0][h]
+
+        ##################################  Calculating STD Hospital Bed Capacity
+        self.ForecastedSTDHospital_Bed_Capacity = np.zeros((len(self.TimeBucketSet), len(self.HospitalSet)))
+        std_dev = (self.Max_Hospital_Bed_Capacity - self.Min_Hospital_Bed_Capacity) / 2
+        for t in self.TimeBucketSet:
+            for h in self.HospitalSet:
+                if t == 0:
+                    # Calculate STD as 21% of the average hospital capacity for t=0
+                    avg_capacity = self.ForecastedAverageHospital_Bed_Capacity[t][h]
+                    std_dev = 0.21 * avg_capacity  # 21% of the average capacity
+                    self.ForecastedSTDHospital_Bed_Capacity[t][h] = round(std_dev)
+                else:
+                    # STD is 0 for later periods
+                    self.ForecastedSTDHospital_Bed_Capacity[t][h] = 0
+        
+        ##################################  Calculating Rescue Vehicle Capacity
+        a = (self.Square_Dimension / 2)
+        nominal_Rescue_Vehicle_Capacity = math.floor(0.5 * (self.Speed / a) * self.Working_Hours_per_Day * self.Number_of_Planning_Days)    # Approximate number of patients transferred in the planning Horizon (Ex: 1 week)
+        
+        for m in self.RescueVehicleSet:  # Assuming Number_Vehicle_Mode means there are four modes (0 to 3)
+            new_Rescue_Vehicle_Capacity = 0
+            if m == 0:
+                new_Rescue_Vehicle_Capacity = 1 * nominal_Rescue_Vehicle_Capacity
+            elif m == 1:
+                new_Rescue_Vehicle_Capacity = 2 * nominal_Rescue_Vehicle_Capacity
+            elif m == 2:
+                new_Rescue_Vehicle_Capacity = 3 * nominal_Rescue_Vehicle_Capacity
+            elif m >= 3:
+                print("\nThe number of Vehicles (index m) cannot be more than 3!!!!!!!!!\n")
+                input("Press Enter to continue...")  # system("Pause") equivalent in Python
+            self.Rescue_Vehicle_Capacity.append(new_Rescue_Vehicle_Capacity)
+        
+        ##################################  Calculating Distances
+        # Read latitude and longitude for demand locations
+        if self.NrDemandLocations == 94:
+            df_demands = pd.read_excel(excel_file_path, sheet_name='Demands_94', header=None)
+            demand_latitudes = df_demands.iloc[1:95, 7].values 
+            demand_longitudes = df_demands.iloc[1:95, 8].values
+            DemandLocation_Position = list(zip(demand_latitudes, demand_longitudes))
+        elif self.NrDemandLocations == 60:
+            df_demands = pd.read_excel(excel_file_path, sheet_name='Demands_60', header=None)
+            demand_latitudes = df_demands.iloc[1:61, 8].values  
+            demand_longitudes = df_demands.iloc[1:61, 9].values  
+            DemandLocation_Position = list(zip(demand_latitudes, demand_longitudes))
+        elif self.NrDemandLocations == 30:
+            df_demands = pd.read_excel(excel_file_path, sheet_name='Demands_30', header=None)
+            demand_latitudes = df_demands.iloc[1:31, 7].values  
+            demand_longitudes = df_demands.iloc[1:31, 8].values  
+            DemandLocation_Position = list(zip(demand_latitudes, demand_longitudes))            
+
+        # Read latitude and longitude for hospitals
+        df_hospitals = pd.read_excel(excel_file_path, sheet_name='Hospitals', header=None)
+        hospital_latitudes = df_hospitals.iloc[4:8, 4].values  # Latitude: E5 to E8
+        hospital_longitudes = df_hospitals.iloc[4:8, 5].values  # Longitude: F5 to F8
+        Hospital_Position = list(zip(hospital_latitudes, hospital_longitudes))
+
+        # Read latitude and longitude for ACFs
+        df_acfs = pd.read_excel(excel_file_path, sheet_name='TMCs_31', header=None)
+        acf_latitudes = df_acfs.iloc[1:32, 4].values  # Latitude: E2 to E32
+        acf_longitudes = df_acfs.iloc[1:32, 5].values  # Longitude: F2 to F32
+        ACF_Position = list(zip(acf_latitudes, acf_longitudes))
+
+        # Now calculate the required distances
+        self.Distance_D_A = self.calculate_distances(DemandLocation_Position, ACF_Position)
+        self.Distance_A_H = self.calculate_distances(ACF_Position, Hospital_Position)
+        self.Distance_D_H = self.calculate_distances(DemandLocation_Position, Hospital_Position)
+        self.Distance_A_A = self.calculate_distances_within_same(ACF_Position)
+        self.Distance_H_H = self.calculate_distances_within_same(Hospital_Position)
+
+        ##################################  Calculating Casualty_Shortage_Cost
+        self.Casualty_Shortage_Cost = np.zeros((len(self.InjuryLevelSet), len(self.DemandSet)))    
+        for j in self.InjuryLevelSet:
+            for l in self.DemandSet:
+                New_Casualty_Shortage_Cost = random.randint(self.Min_Casualty_Shortage_Cost, self.Max_Casualty_Shortage_Cost)
+                if j == 0:
+                    self.Casualty_Shortage_Cost[j][l] = New_Casualty_Shortage_Cost
+                if j == 1:
+                    self.Casualty_Shortage_Cost[j][l] = (New_Casualty_Shortage_Cost * 3)/ 4
+                if j == 2:
+                    self.Casualty_Shortage_Cost[j][l] = (New_Casualty_Shortage_Cost / 2)
+                   
+        ##################################  Calculating Number_Apheresis_Machine_Hospital
+        self.Number_Apheresis_Machine_Hospital = np.zeros((len(self.HospitalSet)))
+        for h in self.HospitalSet:
+            self.Number_Apheresis_Machine_Hospital[h] = random.randint(5, 5)
+                   
+        ##################################  Calculating Number_Rescue_Vehicle_ACF
+        self.Number_Rescue_Vehicle_ACF = np.zeros((len(self.RescueVehicleSet)))
+        #print("Number_Rescue_Vehicle_ACF[m]: ", self.Number_Rescue_Vehicle_ACF[m])
+        Total_Demand_Per_Period = self.ForecastedAverageDemand.sum(axis=(1, 2, 3))
+        #print("Total_Demand_Per_Period: ", Total_Demand_Per_Period)
+
+        max_demand = Total_Demand_Per_Period.max()
+        #print("max_demand: ", max_demand)   
+        a = 0
+        for m in self.RescueVehicleSet:
+            a = a + math.ceil(max_demand / self.Rescue_Vehicle_Capacity[m])
+        a = math.ceil((a / self.NrRescueVehicles) * self.Safety_Factor_Rescue_Vehicle_ACF)
+
+        for m in self.RescueVehicleSet:
+            if a > 0 and m != (self.NrRescueVehicles - 1):
+                c = round(a / self.NrRescueVehicles)
+                self.Number_Rescue_Vehicle_ACF[m] = 4 * c  # Create random number between 0 and a!
+                a -= c
+            elif a > 0 and m == self.NrRescueVehicles - 1:
+                self.Number_Rescue_Vehicle_ACF[m] = 4 * a
+
+        ##################################  Calculating Number_Rescue_Vehicle_Hospital
+        self.Number_Rescue_Vehicle_Hospital = np.zeros((len(self.RescueVehicleSet), len(self.HospitalSet)))
+        for h in self.HospitalSet:
+            a = 0
+            for m in self.RescueVehicleSet:
+                b = self.ForecastedAverageHospital_Bed_Capacity[0][h]
+                a = a + math.ceil( b / self.Rescue_Vehicle_Capacity[m] )
+            
+            a = a + math.ceil((b / self.NrRescueVehicles) * self.Safety_Factor_Rescue_Vehicle_Hospital)
+            remaining_b  = a
+            for m in self.RescueVehicleSet:
+                if remaining_b > 0 and m != (self.NrRescueVehicles - 1):
+                    c = random.randint(0, remaining_b)  # Generate a random number between 0 and remaining_b
+                    self.Number_Rescue_Vehicle_Hospital[m][h] = c
+                    remaining_b -= c
+                elif remaining_b > 0 and m == (self.NrRescueVehicles - 1):
+                    self.Number_Rescue_Vehicle_Hospital[m][h] = int(self.Safety_Factor_Rescue_Vehicle_Hospital * remaining_b)
+                    
+        ##################################  Calculating Apheresis_Machine_Production_Capacity
+        self.Apheresis_Machine_Production_Capacity = round((self.Working_Hours_per_Day_Apheresis * 60) / self.Rquired_Time_For_One_Apheresis_collection);
+
+        ################################## Initialize donor arrays for whole blood and apheresis
+        self.ForecastedAverageWhole_Blood_Donors = np.zeros((len(self.TimeBucketSet), len(self.BloodGPSet), len(self.HospitalSet)))
+        self.ForecastedSTDWhole_Blood_Donors = np.zeros((len(self.TimeBucketSet), len(self.BloodGPSet), len(self.HospitalSet)))
+
+        # Assuming ACFs + Hospitals for apheresis allocation
+        assumed_acfs = 5  # Number of ACFs for approximation
+        total_facilities = len(self.HospitalSet) + assumed_acfs  # Hospitals + ACFs
+
+        self.ForecastedAverageApheresis_Donors = np.zeros((len(self.TimeBucketSet), len(self.BloodGPSet), len(self.FacilitySet)))
+        self.ForecastedSTDApheresis_Donors = np.zeros((len(self.TimeBucketSet), len(self.BloodGPSet), len(self.FacilitySet)))
+
+        # Read the total number of donors from cell K96 in sheet 'Demands_94'
+        df_donors = pd.read_excel(excel_file_path, sheet_name='Demands_94', header=None)
+        total_donors = df_donors.iloc[95, 10]  # Cell K96
+
+        # Split between Whole Blood and Apheresis
+        total_whole_blood_donors = round(total_donors * 0.70)  # 70% for Whole Blood
+        total_apheresis_donors = round(total_donors * 0.30)    # 30% for Apheresis
+
+        # For each time period, distribute the total donors across blood groups and hospitals/facilities
+        for t in self.TimeBucketSet:
+            
+            # Distribute Whole Blood Donors across blood groups
+            if len(self.BloodGPSet) == 8:
+                whole_blood_allocations = np.random.multinomial(total_whole_blood_donors, list(self.blood_group_percentages_8.values()))
+                apheresis_allocations = np.random.multinomial(total_apheresis_donors, list(self.blood_group_percentages_8.values()))
+            else:
+                whole_blood_allocations = np.random.multinomial(total_whole_blood_donors, list(self.blood_group_percentages_4.values()))
+                apheresis_allocations = np.random.multinomial(total_apheresis_donors, list(self.blood_group_percentages_4.values()))
+            
+            # Distribute across hospitals (for Whole Blood) and facilities (for Apheresis)
+            if len(self.BloodGPSet) == 8:
+                for i, c in enumerate(self.blood_group_percentages_8):  # Iterate over blood groups
+                    
+                    # Whole Blood: Allocate to hospitals
+                    whole_blood_allocations_per_hospital = np.random.multinomial(whole_blood_allocations[i], [1/len(self.HospitalSet)]*len(self.HospitalSet))
+                    for h, hospital in enumerate(self.HospitalSet):
+                        self.ForecastedAverageWhole_Blood_Donors[t, i, h] = round(whole_blood_allocations_per_hospital[h])
+                    
+                    # Apheresis: Allocate to hospitals + assumed ACFs
+                    apheresis_allocations_per_facility = np.random.multinomial(apheresis_allocations[i], [1/total_facilities] * total_facilities)
+                    for h, hospital in enumerate(self.HospitalSet):
+                        self.ForecastedAverageApheresis_Donors[t, i, h] = round(apheresis_allocations_per_facility[h])
+                    # Assign remaining donors to a subset of potential ACFs
+                    for u in range(self.NrACFPPoints):
+                        self.ForecastedAverageApheresis_Donors[t, i, len(self.HospitalSet) + u] = round(apheresis_allocations_per_facility[len(self.HospitalSet) + (u % assumed_acfs)])
+
+            elif len(self.BloodGPSet) == 4:
+                for i, c in enumerate(self.blood_group_percentages_4):
+                    
+                    # Whole Blood: Allocate to hospitals
+                    whole_blood_allocations_per_hospital = np.random.multinomial(whole_blood_allocations[i], [1/len(self.HospitalSet)]*len(self.HospitalSet))
+                    for h, hospital in enumerate(self.HospitalSet):
+                        self.ForecastedAverageWhole_Blood_Donors[t, i, h] = round(whole_blood_allocations_per_hospital[h])
+                    
+                    # Apheresis: Allocate to hospitals + assumed ACFs
+                    apheresis_allocations_per_facility = np.random.multinomial(apheresis_allocations[i], [1/total_facilities] * total_facilities)
+                    for h, hospital in enumerate(self.HospitalSet):
+                        self.ForecastedAverageApheresis_Donors[t, i, h] = round(apheresis_allocations_per_facility[h])
+                    # Assign remaining donors to a subset of potential ACFs
+                    for u in range(self.NrACFPPoints):
+                        self.ForecastedAverageApheresis_Donors[t, i, len(self.HospitalSet) + u] = round(apheresis_allocations_per_facility[len(self.HospitalSet) + (u % assumed_acfs)])
+
+        # Calculate standard deviations for Whole Blood and Apheresis
+        theoretical_std_whole = total_whole_blood_donors / 2
+        theoretical_std_apheresis = total_apheresis_donors / 2
+
+        for t in self.TimeBucketSet:            
+            
+            if len(self.BloodGPSet) == 8:
+                std_whole_blood_allocations = np.random.multinomial(theoretical_std_whole, list(self.blood_group_percentages_8.values()))
+                std_apheresis_allocations = np.random.multinomial(theoretical_std_apheresis, list(self.blood_group_percentages_8.values()))                
+                for i, c in enumerate(self.blood_group_percentages_8):
+                    # STD for Whole Blood
+                    std_whole_blood_allocations_per_hospital = np.random.multinomial(std_whole_blood_allocations[i], [1/len(self.HospitalSet)]*len(self.HospitalSet))
+                    for h, hospital in enumerate(self.HospitalSet):
+                        self.ForecastedSTDWhole_Blood_Donors[t, i, h] = round(std_whole_blood_allocations_per_hospital[h] * np.sqrt(self.blood_group_percentages_8[c]))
+                    # STD for Apheresis
+                    std_apheresis_allocations_per_facility = np.random.multinomial(std_apheresis_allocations[i], [1/total_facilities] * total_facilities)
+                    for h, hospital in enumerate(self.HospitalSet):
+                        self.ForecastedSTDApheresis_Donors[t, i, h] = round(std_apheresis_allocations_per_facility[h] * np.sqrt(self.blood_group_percentages_8[c]))
+                    for u in range(self.NrACFPPoints):
+                        self.ForecastedSTDApheresis_Donors[t, i, len(self.HospitalSet) + u] = round(std_apheresis_allocations_per_facility[len(self.HospitalSet) + (u % assumed_acfs)] * np.sqrt(self.blood_group_percentages_8[c]))
+
+            elif len(self.BloodGPSet) == 4:
+                std_whole_blood_allocations = np.random.multinomial(theoretical_std_whole, list(self.blood_group_percentages_4.values()))
+                std_apheresis_allocations = np.random.multinomial(theoretical_std_apheresis, list(self.blood_group_percentages_4.values()))                
+                for i, c in enumerate(self.blood_group_percentages_4):
+                    # STD for Whole Blood
+                    std_whole_blood_allocations_per_hospital = np.random.multinomial(std_whole_blood_allocations[i], [1/len(self.HospitalSet)]*len(self.HospitalSet))
+                    for h, hospital in enumerate(self.HospitalSet):
+                        self.ForecastedSTDWhole_Blood_Donors[t, i, h] = round(std_whole_blood_allocations_per_hospital[h] * np.sqrt(self.blood_group_percentages_4[c]))
+                    
+                    # STD for Apheresis
+                    std_apheresis_allocations_per_facility = np.random.multinomial(std_apheresis_allocations[i], [1/total_facilities] * total_facilities)
+                    for h, hospital in enumerate(self.HospitalSet):
+                        self.ForecastedSTDApheresis_Donors[t, i, h] = round(std_apheresis_allocations_per_facility[h] * np.sqrt(self.blood_group_percentages_4[c]))
+                    for u in range(self.NrACFPPoints):
+                        self.ForecastedSTDApheresis_Donors[t, i, len(self.HospitalSet) + u] = round(std_apheresis_allocations_per_facility[len(self.HospitalSet) + (u % assumed_acfs)] * np.sqrt(self.blood_group_percentages_4[c]))
+
+        ##################################  Calculating Whole_Blood_Production_Time
+        self.Whole_Blood_Production_Time = 1        #Reference for 1 day production time: "Collaborative activities for matching supply and demand in the platelet network"
+        self.Print_Attributes()
+            
+        if Constants.Debug:  print("-------------")
+
+    # Haversine formula to calculate distances between two lat/lon points in kilometers
+    def haversine(self, lat1, lon1, lat2, lon2):
+        R = 6371.0  # Radius of the Earth in km
+        Average_Circuity_Factor_Turkey = 1.36  # Circuity factor for Turkey
+
+        phi1 = math.radians(lat1)
+        phi2 = math.radians(lat2)
+        delta_phi = math.radians(lat2 - lat1)
+        delta_lambda = math.radians(lon2 - lon1)
+
+        a = math.sin(delta_phi / 2.0) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2.0) ** 2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+        distance = (R * c) * Average_Circuity_Factor_Turkey  # Apply the circuity factor to the straight-line distance
+        return round(distance, 2)
+
+    # Calculate distances between two sets of positions using latitude and longitude
+    def calculate_distances(self, set1, set2):
+        distances = []
+        for pos1 in set1:
+            row = []
+            for pos2 in set2:
+                distance = self.haversine(pos1[0], pos1[1], pos2[0], pos2[1])  # Use self.haversine to call the method
+                row.append(distance)
+            distances.append(row)
+        return distances
+
+    # Calculate distances within the same set
+    def calculate_distances_within_same(self, set_positions):
+        distances = []
+        for i, pos1 in enumerate(set_positions):
+            row = []
+            for j, pos2 in enumerate(set_positions):
+                if i != j:
+                    distance = self.haversine(pos1[0], pos1[1], pos2[0], pos2[1])  # Use self.haversine here as well
+                else:
+                    distance = 0  # Distance to itself is 0
+                row.append(distance)
+            distances.append(row)
+        return distances
+
     def Generate_Positions(self, number):
         if Constants.Debug: print("\n We are in 'Instance' Class -- Generate_Positions")
 

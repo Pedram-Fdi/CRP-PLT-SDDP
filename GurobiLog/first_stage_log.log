@@ -1,3 +1,51 @@
 
 Gurobi 11.0.0 (win64) logging started Sun Oct  6 09:18:06 2024
 
+
+Gurobi 11.0.0 (win64) logging started Wed Oct 23 11:50:52 2024
+
+Set parameter LogFile to value "./GurobiLog/first_stage_log.log"
+Set parameter Threads to value 1
+Set parameter FeasibilityTol to value 1e-05
+Gurobi Optimizer version 11.0.0 build v11.0.0rc2 (win64 - Windows 10.0 (18363.2))
+
+CPU model: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 1 threads
+
+
+Warning: excessive time spent in model updates.
+Consider calling update less frequently.
+
+Optimize a model with 7041 rows, 209896 columns and 691229 nonzeros
+Model fingerprint: 0x48021252
+Coefficient statistics:
+  Matrix range     [1e-02, 2e+05]
+  Objective range  [1e-03, 7e+01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 3e+05]
+Presolve removed 1867 rows and 118591 columns
+Presolve time: 0.29s
+Presolved: 5174 rows, 91305 columns, 380245 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    0.0000000e+00   1.865411e+05   0.000000e+00      0s
+    9806    3.2478702e+00   4.719179e+06   0.000000e+00      5s
+   15942    5.6574265e+06   0.000000e+00   0.000000e+00      6s
+
+Solved in 15942 iterations and 5.91 seconds (13.69 work units)
+Optimal objective  5.657426527e+06
+
+Gurobi 11.0.0 (win64) logging started Wed Oct 23 11:53:25 2024
+
+
+Gurobi 11.0.0 (win64) logging started Wed Oct 23 13:01:08 2024
+
+
+Gurobi 11.0.0 (win64) logging started Wed Oct 23 15:17:54 2024
+
+
+Gurobi 11.0.0 (win64) logging started Wed Oct 23 17:06:21 2024
+
+
+Gurobi 11.0.0 (win64) logging started Mon Oct 28 17:31:14 2024
+
