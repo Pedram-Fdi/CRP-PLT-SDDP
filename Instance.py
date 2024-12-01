@@ -6,7 +6,6 @@ import random
 import math
 import numpy as np
 import pickle
-import googlemaps
 
 
 class Instance(object):
@@ -267,14 +266,14 @@ class Instance(object):
             New_ACF_Bed_Capacity = random.randint(self.Min_ACF_Bed_Capacity, (self.Max_ACF_Bed_Capacity * max(1, round(self.NrDemandLocations/10))))
             self.ACF_Bed_Capacity.append(New_ACF_Bed_Capacity)
 
-        ################################## Generate Fixed Costs ACF based on ACF Bed Capacities
+        ################################## Generate Fixed Costs ACF based on ACF Bed Capacities for the Objective Function
         for i in self.ACFPPointSet:
             New_Fixed_Cost_ACF = self.ACF_Bed_Capacity[i] * self.m2_Required_for_Each_Patient * self.Cost_of_Each_m2 * 0.00001
             New_Fixed_Cost_ACF = math.floor(1000 * New_Fixed_Cost_ACF) / 1000
             #self.Fixed_Cost_ACF.append(New_Fixed_Cost_ACF)     #if you wanna consider the cost of ACF openning in the obj function, uncomment this and comment next line.
             self.Fixed_Cost_ACF.append(New_Fixed_Cost_ACF)
         
-        ################################## Generate Fixed Costs ACF based on ACF Bed Capacities
+        ################################## Generate Fixed Costs ACF based on ACF Bed Capacities for the Constraint
         for i in self.ACFPPointSet:
             New_Fixed_Cost_ACF_Constraint = self.ACF_Bed_Capacity[i] * self.m2_Required_for_Each_Patient * self.Cost_of_Each_m2
             New_Fixed_Cost_ACF_Constraint = math.floor(1000 * New_Fixed_Cost_ACF_Constraint) / 1000

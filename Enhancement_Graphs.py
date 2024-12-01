@@ -66,9 +66,9 @@ def plot_data(iterations, lower_bounds, labels, colors, markers, marker_interval
     plt.legend()
     plt.grid(True)
     
-    # Save the plot with the desired filename format
-    save_path = os.path.join(save_dir, f"LowerBounds_{filename}.png")
-    plt.savefig(save_path)
+    # Save the plot with the desired filename format and high DPI
+    save_path = os.path.join(r"C:\PhD\Thesis\Papers\2nd\Code\Results\Results\Approved-Instances\Graphs", f"LowerBounds_{filename}.png")
+    plt.savefig(save_path, dpi=600)  # Set DPI to 300 for high resolution
     print(f"Lower Bounds plot saved as {save_path}")
     plt.show()
 
@@ -147,10 +147,15 @@ def process_files(directory, filenames, max_iterations=None):
 # Main function to execute the code
 def main():
     # Example directory and filenames (update these based on your input)
-    directory = r'C:\PhD\Thesis\Papers\2nd\Code\Results\Results\Beluga'
+    directory = r'C:\PhD\Thesis\Papers\2nd\Code\Results\Results\Approved-Instances\Temp'
+
     filenames = [
-        "SDDPtrace_2_15_5_5_3_4_1_CRP_Multi_Stage_SDDP_RQMC_all10_42_False_1_AllEnhancements_JustYFix___Halton_100_KMeansPP_10.txt",
-        "SDDPtrace_2_15_5_5_3_4_1_CRP_Multi_Stage_SDDP_RQMC_all10_42_False_1_NoStrongCut_JustYFix___Halton_100_KMeansPP_10.txt"
+        "SDDPtrace_3_5_5_5_3_4_5_CRP_Multi_Stage_SDDP_RQMC_all10_42_False_1_AllEnhancements_JustYFix___Halton_100_KMeansPP_10.txt",
+        "SDDPtrace_3_5_5_5_3_4_5_CRP_Multi_Stage_SDDP_RQMC_all10_42_False_1_NoStrongCut_JustYFix___Halton_100_KMeansPP_10.txt",
+        "SDDPtrace_3_5_5_5_3_4_5_CRP_Multi_Stage_SDDP_RQMC_all10_42_False_1_NoWarmUp_JustYFix___Halton_100_KMeansPP_10.txt",      
+        #"SDDPtrace_3_5_5_5_3_4_5_CRP_Multi_Stage_SDDP_RQMC_all10_42_False_1_NoEnhancements_JustYFix___Halton_100_KMeansPP_10.txt",
+        #"SDDPtrace_3_5_5_5_3_4_5_CRP_Multi_Stage_SDDP_RQMC_all10_42_False_1_NoLBF_JustYFix___Halton_100_KMeansPP_10.txt",
+        #"SDDPtrace_3_5_5_5_3_4_5_CRP_Multi_Stage_SDDP_RQMC_all10_42_False_1_NoMultiCut_JustYFix___Halton_100_KMeansPP_10.txt"
     ]
     
     # Set a maximum iteration limit (None means no limit)
@@ -168,8 +173,10 @@ def main():
     
     # Define labels, colors, and markers for the plot
     labels = list(datasets.keys())  # Automatically use dataset names as labels
-    colors = ['blue', 'green', 'orange', 'purple', 'grey']
-    markers = ['o', 'v', '^', '<', '>']
+
+    # Ensure colors and markers have enough items to match the number of datasets
+    colors = ['blue', 'green', 'orange', 'purple', 'grey', 'red']  # Add more colors if needed
+    markers = ['o', 'v', '^', '<', '>', 's']  # Add more markers if needed
     
     # Define filename for saving
     save_filename = filenames[0].split('_JustYFix')[0]
@@ -178,10 +185,10 @@ def main():
     plot_data(iterations, lower_bounds, labels, colors, markers, save_dir=directory, filename=save_filename)
     
     # Plot and save the gaps comparison
-    plot_gaps(gaps_iterations, gaps, labels, colors, markers, save_dir=directory, filename=save_filename)
+    #plot_gaps(gaps_iterations, gaps, labels, colors, markers, save_dir=directory, filename=save_filename)
     
     # Plot and save the durations comparison
-    plot_durations(iterations, durations, labels, colors, markers, save_dir=directory, filename=save_filename)
+    #plot_durations(iterations, durations, labels, colors, markers, save_dir=directory, filename=save_filename)
 
 if __name__ == "__main__":
     main()

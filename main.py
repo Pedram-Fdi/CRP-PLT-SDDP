@@ -332,8 +332,7 @@ if __name__ == '__main__':
             Constants.GenerateStrongCut = True
             Constants.SDDPUseEVPI = True
             Constants.WarmUp_SDDP = True
-            Constants.SDDPUseMultiCut = True
-        
+            Constants.SDDPUseMultiCut = True       
         if TestIdentifier.SequenceType == "Halton":
             Constants.SequenceTypee = "Halton"
         if TestIdentifier.SequenceType == "LHS":
