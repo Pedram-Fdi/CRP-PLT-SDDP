@@ -85,7 +85,7 @@ def parseArguments():
         parser.add_argument("-c", "--mipsetting", help="Enhancements?", required=True, choices=["JustStrongCut", "JustLBF", "JustWarmUp", "JustMultiCut", "NoEnhancements", "NoStrongCut", "NoLBF", "NoWarmUp", "NoMultiCut", "AllEnhancements"])
         parser.add_argument("-seq", "--sequencetype", help="Which RQMC Method?", type=str, required=True, choices=["Halton", "LHS"])
         parser.add_argument("-LBF", "--lbfpercentage", help="Percentage of Scenarios to be used for LBF", type=int, required=True)
-        parser.add_argument("-Cluster", "--ClusteringMethod", help="The method used for Clustering Scenarios?", type=str, required=True, choices=["NoReduction", "KMeans", "SOM", "Hierarchical", "Hierarchical_Diverse"]) 
+        parser.add_argument("-Cluster", "--ClusteringMethod", help="The method used for Clustering Scenarios?", type=str, required=True, choices=["NoReduction", "KMeans", "KMeansPP", "SOM", "Hierarchical", "Hierarchical_Diverse"]) 
         parser.add_argument("-InitNumScenCoeff", "--InitNumScenCoeff", help="Initial Number of Scenarios to be reduced", type=int, required=True)
 
     else:
@@ -105,7 +105,7 @@ def parseArguments():
     # Optional arguments
     parser.add_argument("-s", "--ScenarioSeed", help="The seed used for scenario generation", type=int, default = -1)
     parser.add_argument("-p", "--policy", help="NearestNeighbor", type=str, default="_")
-    parser.add_argument("-n", "--nrevaluation", help="nr scenario used for evaluation.", type=int, default = 100)
+    parser.add_argument("-n", "--nrevaluation", help="nr scenario used for evaluation.", type=int, default = 2500)
     parser.add_argument("-f", "--fixuntil", help="Use with VSS action, how many periods are fixed", type=int, default = 0)
     parser.add_argument("-e", "--evpi", help="if true the evpi model is consdiered",  default=False, action = 'store_true')
     parser.add_argument("-t", "--timehorizon", help="the time horizon used in shiting window.", type=int, default = 1)
