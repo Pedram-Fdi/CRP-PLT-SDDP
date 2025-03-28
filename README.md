@@ -1,7 +1,7 @@
 
 # CRP-PLT-SDDP
 
-**Casualty Response Planning and Platelet Inventory Management via SDDP**
+**Stochastic Dual Dynamic Programming for Multi-Stage Casualty Response Planning with Platelet Inventory Management**
 
 ## Overview
 

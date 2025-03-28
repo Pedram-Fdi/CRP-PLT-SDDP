@@ -213,7 +213,6 @@ class Instance(object):
           
         ################################## Generate J_u
         self.J_u = np.zeros((len(self.FacilitySet), len(self.InjuryLevelSet)))
-
         for u in self.FacilitySet:
             if u < self.NrHospitals:
                 for j in self.InjuryLevelSet:
@@ -225,7 +224,6 @@ class Instance(object):
 
         ################################## Generate J_r
         self.J_r = np.zeros((len(self.InjuryLevelSet), len(self.PlateletAgeSet)))
-
         for j in self.InjuryLevelSet:
             if(j==0):       # High-Priority
                 self.J_r[j][0] = 1
@@ -242,7 +240,6 @@ class Instance(object):
 
         ################################## Generate R_j
         self.R_j = np.zeros((len(self.PlateletAgeSet), len(self.InjuryLevelSet)))
-
         for r in self.PlateletAgeSet:
             for j in self.InjuryLevelSet:
                 if(j==0):       # High-Priority

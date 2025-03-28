@@ -1660,9 +1660,13 @@ class Solution(object):
     def Merge( self, solution2 ):
         if Constants.Debug: print("\n We are in 'Solution' Class -- Merge")
 
+        print("self.Scenarioset:\n", self.Scenarioset)
+        print("self.SenarioNrset:\n", self.SenarioNrset)
         self.Scenarioset.append(solution2.Scenarioset[0])
         self.SenarioNrset = range(len(self.Scenarioset))
-
+        print("self.Scenarioset:\n", self.Scenarioset)
+        print("self.SenarioNrset:\n", self.SenarioNrset)
+        
         self.ACFEstablishment_x_wi = self.ACFEstablishment_x_wi + solution2.ACFEstablishment_x_wi
         #if Constants.Debug: print("self.ACFEstablishment_x_wi:\n ", self.ACFEstablishment_x_wi)
         self.VehicleAssignment_thetavar_wmi = self.VehicleAssignment_thetavar_wmi + solution2.VehicleAssignment_thetavar_wmi

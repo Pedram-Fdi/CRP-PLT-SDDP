@@ -145,7 +145,7 @@ class ProgressiveHedging(object):
             self.ScenarioTree = scenariotree
 
         self.ScenarioSet = self.ScenarioTree.GetAllScenarios(False)
-        
+        print("self.ScenarioSet: ", self.ScenarioSet)
         # for s in self.ScenarioSet:
         #     print("Demandssss:\n ", s.Demands)
         #     print("HospitalCapssss:\n ", s.HospitalCaps)
@@ -354,7 +354,7 @@ class ProgressiveHedging(object):
 
             #Update the coeffient in the objective function
             self.UpdateLagrangianCoeff(m)
-            mip = self.MIPSolvers[0]
+            mip = self.MIPSolvers[m]
             mip.ModifyMipForScenarioTree(self.SplitedScenarioTree[m])
 
             #Solve the model.
@@ -1244,8 +1244,6 @@ class ProgressiveHedging(object):
             self.TraceFile = open(self.TraceFileName, "a")
             self.TraceFile.write(string)
             self.TraceFile.close()
-
-        # This function runs the SDDP algorithm
 
     def GetPrimalConvergenceIndice(self):
         if Constants.Debug: print("\n We are in 'ProgressiveHedging' Class -- GetPrimalConvergenceIndice")

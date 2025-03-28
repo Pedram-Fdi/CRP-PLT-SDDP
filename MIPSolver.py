@@ -1161,7 +1161,8 @@ class MIPSolver(object):
         
         for m in self.Instance.RescueVehicleSet:
 
-            vars_vartheta = [self.GetIndexVehicleAssignmentVariable(m, i, 0) for i in self.Instance.ACFPPointSet]
+            vars_vartheta = [self.GetIndexVehicleAssignmentVariable(m, i, 0) 
+                             for i in self.Instance.ACFPPointSet]
             coeff_vartheta = [-1.0 for i in self.Instance.ACFPPointSet]
             
             # # Create the left-hand side of the constraint

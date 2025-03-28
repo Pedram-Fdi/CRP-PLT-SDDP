@@ -90,7 +90,10 @@ class Solver(object):
             MIPModel = Constants.Two_Stage
 
         if Constants.Debug: print("------------Moving from 'Solver' Class ('CRP' Function) to 'MIPSolver' class Constructor---------------")
-        mipsolver = MIPSolver(self.Instance, MIPModel, scenariotree, evpi=self.TestIdentifier.EVPI,
+        mipsolver = MIPSolver(self.Instance, 
+                              MIPModel, 
+                              scenariotree, 
+                              evpi=self.TestIdentifier.EVPI,
                               implicitnonanticipativity=(not self.TestIdentifier.EVPI),
                               evaluatesolution=self.EvaluateSolution,
                               Multi_Stageheuristic=Multi_Stageheuristic,

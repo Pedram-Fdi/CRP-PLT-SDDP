@@ -11,7 +11,20 @@ import itertools
 
 class ScenarioTree(object):
     #Constructor
-    def __init__(self, instance=None, branchperlevel=[], seed=-1, mipsolver=None, evaluationscenario = False, averagescenariotree = False, scenariogenerationmethod="MC", generateas_Two_Stage = False, model = "Multi_Stage", CopyscenariofromMulti_Stage=False, issymetric = False, givenscenarioset = [], givenfirstperiod=[]):
+    def __init__(self, 
+                 instance=None, 
+                 branchperlevel=[], 
+                 seed=-1, 
+                 mipsolver=None, 
+                 evaluationscenario = False, 
+                 averagescenariotree = False, 
+                 scenariogenerationmethod="MC", 
+                 generateas_Two_Stage = False, 
+                 model = "Multi_Stage", 
+                 CopyscenariofromMulti_Stage=False, 
+                 issymetric = False, 
+                 givenscenarioset = [], 
+                 givenfirstperiod=[]):
         if Constants.Debug: print("\n We are in 'ScenarioTree' Class -- Constructor")
 
         self.CopyscenariofromMulti_Stage = CopyscenariofromMulti_Stage
